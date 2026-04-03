@@ -13,21 +13,35 @@ export class GeminiService {
   public static async generateRecommendations(
     apiKey: string,
     userPrompt: string,
-    historicalContext: string
+    historicalContext: string,
+    existingTitles: string[]
   ): Promise<MovieRecommendation> {
     const ai = new GoogleGenAI({ apiKey });
     
-    // Convert Zod schema to Gemini-compatible JSON Schema
-    // Note: We use the simplified schema structure required by the SDK
+    const systemInstruction = `
+      Eres el Gestor de Estado Local de "The Living Archive". Tu función es orquestar las recomendaciones cinematográficas y gestionar su persistencia utilizando la memoria caché del dispositivo del usuario.
+
+      Reglas Operativas:
+      1. Entorno Aislado: Ya no interactúas con bases de datos externas. Todo el inventario de películas vive en la memoria local (caché) del cliente. No solicites IDs externos ni credenciales de red.
+      2. Evaluación de Estado Local: Antes de generar una nueva recomendación, debes procesar el inventario local proporcionado por el cliente para asegurar que no sugieras material previamente guardado.
+      3. Ejecución Estricta: Estás restringido a generar recomendaciones estructuradas que el cliente guardará en su memoria local.
+      4. Fallos de Memoria: Si el cliente reporta un error al intentar guardar (ej. límite de almacenamiento alcanzado), informa al usuario de manera sencilla que la "bóveda de memoria está llena" y sugiere limpiar la caché local.
+
+      Contexto Histórico del Día: ${historicalContext}
+
+      Películas ya guardadas en el archivo local (NO RECOMENDAR ESTAS):
+      ${existingTitles.join(', ')}
+    `;
+
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash", // Using 1.5 Flash for speed and structured output support
+      model: "gemini-1.5-flash",
       contents: [
         {
           role: "user",
           parts: [
             {
-              text: `You are 'The Astral Curator'. 
-              Historical Context for today: ${historicalContext}
+              text: `${systemInstruction}
+              
               User Request: ${userPrompt}
               
               Generate a curated list of exactly 3 movie recommendations that bridge the user's request with the historical context provided.`

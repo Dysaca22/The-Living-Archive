@@ -3,9 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Key, Sparkles, Archive, Search, Moon, User, LogOut, Info, Loader2, AlertCircle } from 'lucide-react';
 import { useGeminiCredentials } from './hooks/useGeminiCredentials';
 import { CinematicMovieCard } from './components/CinematicMovieCard';
-import { GeminiService } from './services/geminiService';
 import { ExternalApiService } from './services/externalApiService';
-import { GoogleSheetsIntegrationService } from './services/googleSheetsIntegrationService';
 import { PlatformStateManager } from './services/platformStateManager';
 import { PresentationController } from './services/presentationController';
 import { Movie } from './schemas/movieSchema';
@@ -13,6 +11,7 @@ import { Movie } from './schemas/movieSchema';
 /**
  * The Living Archive: A sentient repository of cinematic history.
  * Architected with React 18+, TypeScript, and Gemini API (BYOK).
+ * Now fully autonomous with local device storage.
  */
 export default function App() {
   const { apiKey, isReady, saveKey, clearKey } = useGeminiCredentials();
@@ -22,13 +21,24 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [historicalContext, setHistoricalContext] = useState<string>('');
+  const [view, setView] = useState<'discover' | 'archive'>('discover');
+  const [isNoirMode, setIsNoirMode] = useState(false);
+  const [archivedMovies, setArchivedMovies] = useState<any[]>([]);
 
   // Initial load: Fetch historical context for today
   useEffect(() => {
     if (isReady) {
       ExternalApiService.fetchHistoricalDailyContext().then(setHistoricalContext);
+      setArchivedMovies(PlatformStateManager.evaluateCurrentStateSync());
     }
   }, [isReady]);
+
+  // Refresh archive when switching to archive view
+  useEffect(() => {
+    if (view === 'archive') {
+      setArchivedMovies(PlatformStateManager.evaluateCurrentStateSync());
+    }
+  }, [view]);
 
   const handleSaveKey = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,15 +48,33 @@ export default function App() {
   };
 
   /**
-   * Coordinates the saving of a movie to the archive.
+   * Coordinates the saving of a movie to the local archive.
    */
   const handleSaveToArchive = async (movie: { title: string; year: number; id: number }) => {
     try {
-      await PlatformStateManager.syncToSheetsProxy(movie);
+      const fullMovie = recommendations.find(r => r.title === movie.title);
+      
+      await PlatformStateManager.syncToLocalCache({
+        title: movie.title,
+        year: movie.year,
+        tmdb_id: movie.id,
+        director: "Unknown",
+        match_score: 100,
+        astral_reasoning: fullMovie?.narrative_justification || "No reasoning provided.",
+        poster: fullMovie?.poster
+      });
+      
+      // Update local state if we are in archive view (though we usually save from discover)
+      setArchivedMovies(PlatformStateManager.evaluateCurrentStateSync());
     } catch (err: any) {
       setError(err.message);
       throw err;
     }
+  };
+
+  const handleDeleteFromArchive = (title: string) => {
+    PlatformStateManager.deleteFromLocalCache(title);
+    setArchivedMovies(PlatformStateManager.evaluateCurrentStateSync());
   };
 
   /**
@@ -82,7 +110,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={`min-h-screen flex flex-col noir-transition ${isNoirMode ? 'grayscale contrast-125 brightness-75' : ''}`}>
       {/* Navigation Rail */}
       <nav className="fixed top-0 left-0 right-0 h-16 glass z-50 flex items-center justify-between px-8">
         <div className="flex items-center gap-2">
@@ -90,9 +118,24 @@ export default function App() {
           <span className="font-serif text-xl font-medium tracking-tight">The Living Archive</span>
         </div>
         <div className="flex items-center gap-8 text-on-surface-variant font-mono text-sm uppercase tracking-widest">
-          <button className="hover:text-on-surface transition-colors">Archive</button>
-          <button className="text-on-surface border-b border-primary pb-1">Discover</button>
-          <button className="hover:text-on-surface transition-colors">Noir Mode</button>
+          <button 
+            onClick={() => setView('archive')}
+            className={`transition-colors ${view === 'archive' ? 'text-on-surface border-b border-primary pb-1' : 'hover:text-on-surface'}`}
+          >
+            Archive
+          </button>
+          <button 
+            onClick={() => setView('discover')}
+            className={`transition-colors ${view === 'discover' ? 'text-on-surface border-b border-primary pb-1' : 'hover:text-on-surface'}`}
+          >
+            Discover
+          </button>
+          <button 
+            onClick={() => setIsNoirMode(!isNoirMode)}
+            className={`transition-colors ${isNoirMode ? 'text-primary' : 'hover:text-on-surface'}`}
+          >
+            Noir Mode
+          </button>
         </div>
         <div className="flex items-center gap-6">
           <button className="hover:text-primary transition-colors"><Moon className="w-5 h-5" /></button>
@@ -105,7 +148,7 @@ export default function App() {
       <main className="flex-1 pt-24 px-8 pb-12 relative overflow-hidden">
         <AnimatePresence mode="wait">
           {!isReady ? (
-            /* Credentials Blocker */
+            /* ... (Credentials Blocker) ... */
             <motion.div
               key="blocker"
               initial={{ opacity: 0, y: 20 }}
@@ -144,12 +187,13 @@ export default function App() {
                 </form>
               </div>
             </motion.div>
-          ) : (
-            /* Main Dashboard */
+          ) : view === 'discover' ? (
+            /* Main Dashboard (Discover View) */
             <motion.div
               key="dashboard"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="max-w-7xl mx-auto"
             >
               <header className="mb-16 text-center">
@@ -160,9 +204,14 @@ export default function App() {
                 >
                   Discover the Essence
                 </motion.h1>
-                <p className="font-mono text-on-surface-variant uppercase tracking-[0.3em] text-xs">
-                  {historicalContext || "Sift through the astral records of cinema"}
-                </p>
+                <div className="max-w-xl mx-auto">
+                  <p className="font-mono text-on-surface-variant uppercase tracking-[0.3em] text-[10px] mb-2">
+                    Historical Resonance
+                  </p>
+                  <p className="text-xs text-primary/80 italic leading-relaxed">
+                    {historicalContext || "Sifting through the astral records of cinema..."}
+                  </p>
+                </div>
               </header>
 
               {/* Search Bar */}
@@ -234,7 +283,6 @@ export default function App() {
                       </motion.div>
                     ))
                   ) : (
-                    /* Default Mockup if no results */
                     <div className="col-span-2 flex items-center justify-center h-64 border border-dashed border-white/5 rounded-2xl">
                       <div className="text-center text-on-surface-variant">
                         <Archive className="w-8 h-8 mx-auto mb-4 opacity-20" />
@@ -244,25 +292,82 @@ export default function App() {
                   )}
                 </AnimatePresence>
               </section>
+            </motion.div>
+          ) : (
+            /* Archive View */
+            <motion.div
+              key="archive"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="max-w-7xl mx-auto"
+            >
+              <header className="mb-16 text-center">
+                <h1 className="text-6xl font-serif mb-4 italic">The Vault</h1>
+                <p className="font-mono text-on-surface-variant uppercase tracking-[0.3em] text-[10px]">
+                  {archivedMovies.length} Resonances Persisted
+                </p>
+              </header>
 
-              {/* Footer */}
-              <footer className="mt-32 flex items-center justify-between border-t border-white/5 pt-8 font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">
-                <div className="flex gap-8">
-                  <span>Node_Link: Successful</span>
-                  <span>Astral_Depth: 142.4km</span>
-                  <span>Chrono_Status: Stable</span>
-                </div>
-                <button 
-                  onClick={clearKey}
-                  className="flex items-center gap-2 hover:text-primary transition-colors"
-                >
-                  <LogOut className="w-3 h-3" />
-                  Disconnect Archive
-                </button>
-              </footer>
+              <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                <AnimatePresence mode="popLayout">
+                  {archivedMovies.length > 0 ? (
+                    archivedMovies.map((movie, i) => (
+                      <motion.div
+                        key={movie.title}
+                        layout
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ delay: i * 0.05 }}
+                      >
+                        <CinematicMovieCard
+                          movieTitle={movie.title}
+                          posterImageSource={movie.poster}
+                          releaseYear={movie.year}
+                          genre={movie.director}
+                          onDelete={handleDeleteFromArchive}
+                        />
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="col-span-full flex flex-col items-center justify-center h-96 glass rounded-3xl border-dashed border-white/10">
+                      <Archive className="w-12 h-12 text-primary/20 mb-6" />
+                      <h3 className="text-xl font-serif italic mb-2">The Vault is Empty</h3>
+                      <p className="text-on-surface-variant text-sm font-mono uppercase tracking-widest">
+                        No cinematic echoes have been persisted yet.
+                      </p>
+                      <button 
+                        onClick={() => setView('discover')}
+                        className="mt-8 text-primary hover:underline font-mono text-xs uppercase tracking-widest"
+                      >
+                        Begin Discovery
+                      </button>
+                    </div>
+                  )}
+                </AnimatePresence>
+              </section>
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Footer */}
+        {isReady && (
+          <footer className="mt-32 flex items-center justify-between border-t border-white/5 pt-8 font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">
+            <div className="flex gap-8">
+              <span>Node_Link: Successful</span>
+              <span>Vault_Status: {archivedMovies.length > 0 ? 'Active' : 'Empty'}</span>
+              <span>Chrono_Status: Stable</span>
+            </div>
+            <button 
+              onClick={clearKey}
+              className="flex items-center gap-2 hover:text-primary transition-colors"
+            >
+              <LogOut className="w-3 h-3" />
+              Disconnect Archive
+            </button>
+          </footer>
+        )}
       </main>
     </div>
   );

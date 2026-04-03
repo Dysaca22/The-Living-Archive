@@ -31,7 +31,8 @@ export class PresentationController {
     const rawRecommendations = await GeminiService.generateRecommendations(
       apiKey,
       query,
-      historicalContext
+      historicalContext,
+      existingTitles
     );
 
     // 3. Consolidate and enrich with visual metadata (TMDB)

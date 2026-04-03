@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { extractColors } from 'extract-colors';
-import { Sparkles, Info, Save, Check } from 'lucide-react';
+import { Sparkles, Info, Save, Check, Trash2 } from 'lucide-react';
 
 interface CinematicMovieCardProps {
   movieTitle: string;
@@ -10,6 +10,7 @@ interface CinematicMovieCardProps {
   genre?: string;
   tmdbId?: number;
   onSave?: (movie: { title: string; year: number; id: number }) => Promise<void>;
+  onDelete?: (title: string) => void;
 }
 
 /**
@@ -22,7 +23,8 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
   releaseYear,
   genre,
   tmdbId,
-  onSave
+  onSave,
+  onDelete
 }) => {
   const [dominantColor, setDominantColor] = useState<string>('rgba(255, 77, 0, 0.15)');
   const [isLoaded, setIsLoaded] = useState(false);
@@ -142,27 +144,36 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
                 {releaseYear}
               </span>
             )}
-            <button 
-              onClick={handleSave}
-              disabled={isSaving || isSaved}
-              className={`opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] uppercase font-mono tracking-widest ${
-                isSaved ? 'text-green-400' : 'text-on-surface-variant hover:text-primary'
-              }`}
-            >
-              {isSaving ? (
-                <span className="animate-pulse">Archiving...</span>
-              ) : isSaved ? (
-                <>
-                  <Check className="w-3 h-3" />
-                  Archived
-                </>
-              ) : (
-                <>
-                  <Save className="w-3 h-3" />
-                  Archive
-                </>
-              )}
-            </button>
+            {onDelete ? (
+              <button 
+                onClick={(e) => { e.stopPropagation(); onDelete(movieTitle); }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-on-surface-variant hover:text-red-400"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            ) : (
+              <button 
+                onClick={handleSave}
+                disabled={isSaving || isSaved}
+                className={`opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] uppercase font-mono tracking-widest ${
+                  isSaved ? 'text-green-400' : 'text-on-surface-variant hover:text-primary'
+                }`}
+              >
+                {isSaving ? (
+                  <span className="animate-pulse">Archiving...</span>
+                ) : isSaved ? (
+                  <>
+                    <Check className="w-3 h-3" />
+                    Archived
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-3 h-3" />
+                    Archive
+                  </>
+                )}
+              </button>
+            )}
             <button className="opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               <Info className="w-4 h-4 text-on-surface-variant hover:text-white" />
             </button>
