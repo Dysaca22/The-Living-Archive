@@ -3,7 +3,7 @@
  * Provides a decentralized and autonomous storage solution.
  */
 
-import { CachedMovie } from '../types/movie';
+import { VaultMovieRecord } from '../types/movie';
 
 const CACHE_KEY = 'the_living_archive_vault';
 
@@ -11,10 +11,10 @@ export class LocalCacheService {
   /**
    * Retrieves all movies from the local cache, sorted by timestamp descending.
    */
-  public static getMovies(): CachedMovie[] {
+  public static getMovies(): VaultMovieRecord[] {
     try {
       const data = localStorage.getItem(CACHE_KEY);
-      const movies: CachedMovie[] = data ? JSON.parse(data) : [];
+      const movies: VaultMovieRecord[] = data ? JSON.parse(data) : [];
       
       // Sort by timestamp descending (newest first)
       return movies.sort((a, b) => 
@@ -29,7 +29,7 @@ export class LocalCacheService {
   /**
    * Saves a movie to the local cache with robust deduplication.
    */
-  public static saveMovie(movie: CachedMovie): void {
+  public static saveMovie(movie: VaultMovieRecord): void {
     try {
       const movies = this.getMovies();
       
@@ -72,6 +72,24 @@ export class LocalCacheService {
   }
 
   /**
+   * Updates an existing movie in the local cache.
+   */
+  public static updateMovie(title: string, releaseYear: number, updates: Partial<VaultMovieRecord>): void {
+    try {
+      const movies = this.getMovies();
+      const updatedMovies = movies.map(m => {
+        if (m.title === title && m.releaseYear === releaseYear) {
+          return { ...m, ...updates };
+        }
+        return m;
+      });
+      this.persist(updatedMovies);
+    } catch (error) {
+      console.error("Failed to update local cache:", error);
+    }
+  }
+
+  /**
    * Exports the entire archive as a JSON string.
    */
   public static exportArchive(): string {
@@ -100,6 +118,10 @@ export class LocalCacheService {
       const newMovies = [...existingMovies];
 
       for (const movie of data.movies) {
+        if (!movie || typeof movie !== 'object' || !movie.title || typeof movie.title !== 'string' || !movie.releaseYear || typeof movie.releaseYear !== 'number') {
+          throw new Error("Invalid movie format in archive. Missing required fields.");
+        }
+
         const isDuplicate = newMovies.some(m => {
           if (m.tmdbId && movie.tmdbId) return m.tmdbId === movie.tmdbId;
           return m.title.toLowerCase().trim() === movie.title.toLowerCase().trim() && m.releaseYear === movie.releaseYear;
@@ -131,7 +153,7 @@ export class LocalCacheService {
   /**
    * Internal persistence helper.
    */
-  private static persist(movies: CachedMovie[]): void {
+  private static persist(movies: VaultMovieRecord[]): void {
     try {
       localStorage.setItem(CACHE_KEY, JSON.stringify(movies));
     } catch (error) {

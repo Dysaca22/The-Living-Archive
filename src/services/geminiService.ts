@@ -59,7 +59,9 @@ export class GeminiService {
         throw new Error("The Astral Curator returned an empty resonance. The cinematic flow is currently dry.");
       }
 
-      const data = JSON.parse(text);
+      // Clean markdown formatting if present
+      const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
+      const data = JSON.parse(cleanText);
       
       // 1. Strict Schema Validation
       const validatedData = movieRecommendationSchema.parse(data);

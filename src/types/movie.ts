@@ -3,6 +3,8 @@
  * Architected for consistency across AI, Cache, and UI layers.
  */
 
+export type ViewingStatus = 'pending' | 'watched' | 'archived';
+
 export interface Movie {
   title: string;
   releaseYear: number;
@@ -12,6 +14,9 @@ export interface Movie {
   soundtrackHighlight?: string;
 }
 
-export interface CachedMovie extends Movie {
+export interface VaultMovieRecord extends Movie {
   timestamp: string;
+  status: ViewingStatus;
+  userRating?: number;
+  userNotes?: string;
 }

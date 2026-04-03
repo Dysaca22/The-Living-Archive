@@ -1,20 +1,45 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Calendar, Music, Sparkles, History, ExternalLink } from 'lucide-react';
-import { Movie } from '../types/movie';
+import { X, Calendar, Music, Sparkles, History, ExternalLink, Save, Trash2, CheckCircle2, Clock, Archive as ArchiveIcon, Star, MessageSquare } from 'lucide-react';
+import { Movie, ViewingStatus } from '../types/movie';
 
 interface MovieDetailModalProps {
   movie: Movie | null;
   onClose: () => void;
+  onSave?: (movie: Movie) => Promise<void>;
+  onDelete?: (title: string, releaseYear: number) => void;
+  onUpdateStatus?: (title: string, releaseYear: number, status: ViewingStatus) => void;
+  onUpdateRating?: (title: string, releaseYear: number, rating: number) => void;
+  onUpdateNotes?: (title: string, releaseYear: number, notes: string) => void;
+  isSaved?: boolean;
+  currentStatus?: ViewingStatus;
+  currentRating?: number;
+  currentNotes?: string;
   historicalContext?: string;
 }
 
 export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
   movie,
   onClose,
+  onSave,
+  onDelete,
+  onUpdateStatus,
+  onUpdateRating,
+  onUpdateNotes,
+  isSaved,
+  currentStatus,
+  currentRating,
+  currentNotes,
   historicalContext
 }) => {
   if (!movie) return null;
+
+  const [localNotes, setLocalNotes] = React.useState(currentNotes || '');
+  const [hasImageError, setHasImageError] = React.useState(false);
+
+  React.useEffect(() => {
+    setLocalNotes(currentNotes || '');
+  }, [currentNotes]);
 
   return (
     <AnimatePresence>
@@ -32,22 +57,36 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
           className="relative w-full max-w-4xl max-h-[90vh] glass rounded-3xl overflow-hidden flex flex-col md:flex-row"
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Dynamic Background Effect (Ambilight) */}
+          {movie.posterUrl && !hasImageError && (
+            <img 
+              src={movie.posterUrl} 
+              alt="" 
+              className="absolute inset-0 w-full h-full object-cover opacity-20 blur-[100px] mix-blend-screen z-[-1]" 
+              referrerPolicy="no-referrer"
+              aria-hidden="true"
+              onError={() => setHasImageError(true)}
+            />
+          )}
+
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 z-10 p-2 rounded-full bg-surface-container-highest/20 hover:bg-surface-container-highest/40 transition-colors text-on-surface"
+            className="absolute top-6 right-6 z-20 p-2 rounded-full bg-surface-container-highest/40 hover:bg-surface-container-highest/60 transition-colors text-on-surface focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
 
           {/* Poster Section */}
           <div className="w-full md:w-2/5 aspect-[2/3] md:aspect-auto relative group">
-            {movie.posterUrl ? (
+            {movie.posterUrl && !hasImageError ? (
               <img
                 src={movie.posterUrl}
                 alt={movie.title}
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
+                onError={() => setHasImageError(true)}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-surface-container-highest/10">
@@ -102,6 +141,85 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
                 <p className="text-on-surface-variant leading-relaxed text-lg italic">
                   "{movie.narrativeJustification}"
                 </p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col gap-6">
+                {isSaved ? (
+                  <>
+                    {/* Rating & Notes */}
+                    <div className="space-y-6 p-6 bg-surface-container-highest/10 rounded-3xl border border-white/5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant">Personal Rating</span>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              onClick={() => onUpdateRating?.(movie.title, movie.releaseYear, star)}
+                              className="transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-full p-1"
+                            >
+                              <Star 
+                                className={`w-5 h-5 ${
+                                  (currentRating || 0) >= star 
+                                    ? 'fill-primary text-primary' 
+                                    : 'text-on-surface-variant/30'
+                                }`} 
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-on-surface-variant">
+                          <MessageSquare className="w-3 h-3" />
+                          <span className="font-mono text-[10px] uppercase tracking-widest">Personal Notes</span>
+                        </div>
+                        <textarea
+                          value={localNotes}
+                          onChange={(e) => setLocalNotes(e.target.value)}
+                          onBlur={() => onUpdateNotes?.(movie.title, movie.releaseYear, localNotes)}
+                          placeholder="What did this resonance evoke in you?..."
+                          className="w-full bg-surface-container-highest/20 rounded-xl p-4 text-sm font-serif italic border border-white/5 focus:outline-none focus:border-primary/30 transition-colors min-h-[100px] resize-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 p-1 bg-surface-container-highest/20 rounded-2xl border border-white/5">
+                      {(['pending', 'watched', 'archived'] as ViewingStatus[]).map((status) => (
+                        <button
+                          key={status}
+                          onClick={() => onUpdateStatus?.(movie.title, movie.releaseYear, status)}
+                          className={`flex-1 py-3 rounded-xl font-mono text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
+                            currentStatus === status 
+                              ? 'bg-primary text-on-primary shadow-lg shadow-primary/20' 
+                              : 'text-on-surface-variant hover:bg-white/5'
+                          }`}
+                        >
+                          {status === 'pending' && <Clock className="w-3 h-3" />}
+                          {status === 'watched' && <CheckCircle2 className="w-3 h-3" />}
+                          {status === 'archived' && <ArchiveIcon className="w-3 h-3" />}
+                          {status}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => onDelete?.(movie.title, movie.releaseYear)}
+                      className="w-full py-4 rounded-2xl bg-transparent hover:bg-red-500/10 text-red-400 font-mono text-xs uppercase tracking-[0.2em] transition-all border border-transparent focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none flex items-center justify-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Sever Link
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => onSave?.(movie)}
+                    className="w-full py-4 rounded-2xl bg-primary/20 hover:bg-primary/30 text-primary font-mono text-xs uppercase tracking-[0.2em] transition-all border border-primary/30 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,77,0,0.15)]"
+                  >
+                    <Save className="w-4 h-4" />
+                    Persist Resonance
+                  </button>
+                )}
               </div>
 
               {/* Historical Context */}

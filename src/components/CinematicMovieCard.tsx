@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { extractColors } from 'extract-colors';
-import { Sparkles, Info, Save, Check, Trash2 } from 'lucide-react';
+import { Sparkles, Info, Save, Check, Trash2, CheckCircle2, Clock, Archive as ArchiveIcon } from 'lucide-react';
 
-import { Movie } from '../types/movie';
+import { Movie, ViewingStatus } from '../types/movie';
 
 interface CinematicMovieCardProps {
   movie: Movie;
   onSave?: (movie: Movie) => Promise<void>;
   onDelete?: (title: string, releaseYear: number) => void;
   onInfo?: (movie: Movie) => void;
+  isSaved?: boolean;
+  status?: ViewingStatus;
 }
 
 /**
@@ -20,13 +22,20 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
   movie,
   onSave,
   onDelete,
-  onInfo
+  onInfo,
+  isSaved: isSavedProp = false,
+  status
 }) => {
   const [dominantColor, setDominantColor] = useState<string>('rgba(255, 77, 0, 0.15)');
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const [isSaved, setIsSaved] = useState(isSavedProp);
+  const [hasImageError, setHasImageError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    setIsSaved(isSavedProp);
+  }, [isSavedProp]);
 
   const handleSave = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -84,13 +93,30 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
   return (
     <motion.div
       whileHover={{ y: -10 }}
-      className="group relative aspect-[2/3] rounded-xl overflow-hidden glass transition-all duration-700 cursor-pointer"
+      className="group relative aspect-[2/3] rounded-xl overflow-hidden glass transition-all duration-700 cursor-pointer hover:border-white/20 hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
       onClick={handleInfo}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleInfo(e as any);
+        }
+      }}
       style={{
         // Dynamic shadow/glow based on the dominant color
         boxShadow: `0 20px 40px -15px ${dominantColor.replace('0.2', '0.1')}`,
       }}
     >
+      {/* Status Badge */}
+      {isSaved && status && (
+        <div className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full glass border border-white/10 flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-primary">
+          {status === 'pending' && <Clock className="w-3 h-3" />}
+          {status === 'watched' && <CheckCircle2 className="w-3 h-3" />}
+          {status === 'archived' && <ArchiveIcon className="w-3 h-3" />}
+          {status}
+        </div>
+      )}
+
       {/* Astral Aura: Dynamic background glow */}
       <div 
         className="absolute inset-0 -z-10 blur-[100px] transition-colors duration-1000"
@@ -98,7 +124,7 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
       />
 
       <AnimatePresence mode="wait">
-        {!isLoaded && (
+        {!isLoaded && !hasImageError && (
           <motion.div 
             key="skeleton"
             initial={{ opacity: 1 }}
@@ -110,18 +136,24 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
         )}
       </AnimatePresence>
 
-      {movie.posterUrl ? (
-        <img
-          ref={imgRef}
-          src={movie.posterUrl}
-          alt={movie.title}
-          crossOrigin="anonymous" // Crucial for CORS pixel access
-          onLoad={() => setIsLoaded(true)}
-          referrerPolicy="no-referrer"
-          className={`w-full h-full object-cover transition-all duration-1000 ${
-            isLoaded ? 'opacity-60 group-hover:opacity-100 grayscale-[0.3] group-hover:grayscale-0 scale-100 group-hover:scale-110' : 'opacity-0'
-          }`}
-        />
+      {movie.posterUrl && !hasImageError ? (
+        <div className="w-full h-full overflow-hidden">
+          <img
+            ref={imgRef}
+            src={movie.posterUrl}
+            alt={movie.title}
+            crossOrigin="anonymous" // Crucial for CORS pixel access
+            onLoad={() => setIsLoaded(true)}
+            onError={() => {
+              setHasImageError(true);
+              setIsLoaded(true);
+            }}
+            referrerPolicy="no-referrer"
+            className={`w-full h-full object-cover transition-transform duration-700 ease-out ${
+              isLoaded ? 'opacity-60 group-hover:opacity-100 grayscale-[0.3] group-hover:grayscale-0 scale-100 group-hover:scale-105' : 'opacity-0'
+            }`}
+          />
+        </div>
       ) : (
         <div className="w-full h-full flex items-center justify-center bg-surface-container-highest/10">
           <Sparkles className="text-primary/20 w-12 h-12" />
@@ -152,7 +184,7 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
               {onDelete ? (
                 <button 
                   onClick={(e) => { e.stopPropagation(); onDelete(movie.title, movie.releaseYear); }}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-on-surface-variant hover:text-red-400 p-1"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-on-surface-variant hover:text-red-400 p-1 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-red-400 focus-visible:outline-none rounded"
                   aria-label={`Remove ${movie.title} from vault`}
                   title={`Remove ${movie.title} from vault`}
                 >
@@ -162,7 +194,7 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
                 <button 
                   onClick={handleSave}
                   disabled={isSaving || isSaved}
-                  className={`opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] uppercase font-mono tracking-widest ${
+                  className={`opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] uppercase font-mono tracking-widest focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-primary focus-visible:outline-none ${
                     isSaved ? 'text-green-400' : 'text-on-surface-variant hover:text-primary'
                   }`}
                   aria-label={isSaved ? `${movie.title} is already archived` : `Archive ${movie.title}`}
@@ -185,7 +217,7 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
               )}
               <button 
                 onClick={handleInfo}
-                className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 p-1"
+                className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 p-1 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-white focus-visible:outline-none rounded"
                 aria-label={`View details for ${movie.title}`}
                 title={`View details for ${movie.title}`}
               >

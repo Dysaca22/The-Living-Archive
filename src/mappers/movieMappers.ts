@@ -1,5 +1,5 @@
 import { Movie as ZodMovie } from '../schemas/movieSchema';
-import { Movie, CachedMovie } from '../types/movie';
+import { Movie, VaultMovieRecord } from '../types/movie';
 
 /**
  * Movie Mappers: Handles translations between different data representations.
@@ -21,12 +21,13 @@ export class MovieMappers {
   }
 
   /**
-   * Maps a Movie domain model to a CachedMovie.
+   * Maps a Movie domain model to a VaultMovieRecord.
    */
-  public static toCached(movie: Movie): CachedMovie {
+  public static toVaultRecord(movie: Movie): VaultMovieRecord {
     return {
       ...movie,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      status: 'pending'
     };
   }
 }

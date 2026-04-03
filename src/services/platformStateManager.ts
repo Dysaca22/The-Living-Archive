@@ -1,6 +1,6 @@
 import { LocalCacheService } from './localCacheService';
 import { RemotePersistenceService } from './remotePersistenceService';
-import { Movie, CachedMovie } from '../types/movie';
+import { Movie, VaultMovieRecord } from '../types/movie';
 
 /**
  * PlatformStateManager: Coordinates reading and writing of movie recommendations.
@@ -15,7 +15,7 @@ export class PlatformStateManager {
   public static async evaluateCurrentState(): Promise<string[]> {
     try {
       const movies = LocalCacheService.getMovies();
-      return movies.map((m: CachedMovie) => m.title.toLowerCase());
+      return movies.map((m: VaultMovieRecord) => m.title.toLowerCase());
     } catch (error) {
       console.error("Error evaluating current state:", error);
       throw new Error("Error al acceder a la memoria local del dispositivo.");
@@ -25,7 +25,7 @@ export class PlatformStateManager {
   /**
    * evaluateCurrentStateSync: Synchronous version for initial load.
    */
-  public static evaluateCurrentStateSync(): CachedMovie[] {
+  public static evaluateCurrentStateSync(): VaultMovieRecord[] {
     return LocalCacheService.getMovies();
   }
 
@@ -37,10 +37,36 @@ export class PlatformStateManager {
   }
 
   /**
+   * restoreFromRemote: Fetches the remote vault and merges it into local cache.
+   */
+  public static async restoreFromRemote(): Promise<number> {
+    try {
+      const remoteMovies = await RemotePersistenceService.fetchRemoteVault();
+      if (remoteMovies.length === 0) return 0;
+
+      const localMovies = LocalCacheService.getMovies();
+      const localKeys = new Set(localMovies.map(m => `${m.title.toLowerCase()}_${m.releaseYear}`));
+      
+      let restoredCount = 0;
+      for (const movie of remoteMovies) {
+        const key = `${movie.title.toLowerCase()}_${movie.releaseYear}`;
+        if (!localKeys.has(key)) {
+          LocalCacheService.saveMovie(movie);
+          restoredCount++;
+        }
+      }
+      return restoredCount;
+    } catch (error) {
+      console.error("Restore failed:", error);
+      throw new Error("No se pudo sincronizar con la nube.");
+    }
+  }
+
+  /**
    * sync_to_local_cache: Saves a movie recommendation to the local cache and remote vault.
    * Implements a Dual-Write strategy for maximum resilience.
    */
-  public static async syncToLocalCache(movie: CachedMovie): Promise<void> {
+  public static async syncToLocalCache(movie: VaultMovieRecord): Promise<void> {
     try {
       // Step 1: Verify current state before registration
       const existingTitles = await this.evaluateCurrentState();

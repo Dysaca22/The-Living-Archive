@@ -1,4 +1,4 @@
-import { CachedMovie } from '../types/movie';
+import { VaultMovieRecord } from '../types/movie';
 
 /**
  * RemotePersistenceService: Handles communication with the server-side proxy
@@ -8,7 +8,7 @@ export class RemotePersistenceService {
   /**
    * Fetches the entire remote archive.
    */
-  public static async fetchRemoteVault(): Promise<CachedMovie[]> {
+  public static async fetchRemoteVault(): Promise<VaultMovieRecord[]> {
     try {
       const response = await fetch('/api/vault');
       if (!response.ok) {
@@ -24,9 +24,21 @@ export class RemotePersistenceService {
   }
 
   /**
+   * Checks if the remote vault is configured on the server.
+   */
+  public static async isConfigured(): Promise<boolean> {
+    try {
+      const response = await fetch('/api/vault');
+      return response.status !== 503;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Syncs a single movie to the remote archive.
    */
-  public static async syncMovie(movie: CachedMovie): Promise<void> {
+  public static async syncMovie(movie: VaultMovieRecord): Promise<void> {
     try {
       const response = await fetch('/api/vault', {
         method: 'POST',
