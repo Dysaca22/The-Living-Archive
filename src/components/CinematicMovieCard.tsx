@@ -3,14 +3,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { extractColors } from 'extract-colors';
 import { Sparkles, Info, Save, Check, Trash2 } from 'lucide-react';
 
+import { Movie } from '../types/movie';
+
 interface CinematicMovieCardProps {
-  movieTitle: string;
-  posterImageSource: string;
-  releaseYear?: number;
-  genre?: string;
-  tmdbId?: number;
-  onSave?: (movie: { title: string; year: number; id: number }) => Promise<void>;
-  onDelete?: (title: string) => void;
+  movie: Movie;
+  onSave?: (movie: Movie) => Promise<void>;
+  onDelete?: (title: string, releaseYear: number) => void;
+  onInfo?: (movie: Movie) => void;
 }
 
 /**
@@ -18,13 +17,10 @@ interface CinematicMovieCardProps {
  * the dominant color from a movie poster and applies it as a dynamic background glow.
  */
 export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
-  movieTitle,
-  posterImageSource,
-  releaseYear,
-  genre,
-  tmdbId,
+  movie,
   onSave,
-  onDelete
+  onDelete,
+  onInfo
 }) => {
   const [dominantColor, setDominantColor] = useState<string>('rgba(255, 77, 0, 0.15)');
   const [isLoaded, setIsLoaded] = useState(false);
@@ -38,11 +34,7 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
 
     setIsSaving(true);
     try {
-      await onSave({
-        title: movieTitle,
-        year: releaseYear || 0,
-        id: tmdbId || 0
-      });
+      await onSave(movie);
       setIsSaved(true);
     } catch (error) {
       console.error("Failed to save movie:", error);
@@ -51,15 +43,20 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
     }
   };
 
+  const handleInfo = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onInfo) onInfo(movie);
+  };
+
   useEffect(() => {
     const extractColorFromImage = async () => {
-      if (imgRef.current && imgRef.current.complete) {
+      if (imgRef.current && imgRef.current.complete && movie.posterUrl) {
         try {
           // Extract colors from the image using the high-performance library
-          const colors = await extractColors(posterImageSource, {
+          const colors = await extractColors(movie.posterUrl, {
             crossOrigin: 'anonymous',
-            pixels: 10000, // Downscale for performance
-            distance: 0.22, // Minimum distance between colors
+            pixels: 5000, // Reduced for better performance
+            distance: 0.25, // Increased distance for more distinct colors
           });
 
           if (colors.length > 0) {
@@ -82,12 +79,13 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
         imgRef.current.removeEventListener('load', extractColorFromImage);
       }
     };
-  }, [posterImageSource]);
+  }, [movie.posterUrl]);
 
   return (
     <motion.div
       whileHover={{ y: -10 }}
-      className="group relative aspect-[2/3] rounded-xl overflow-hidden glass transition-all duration-700"
+      className="group relative aspect-[2/3] rounded-xl overflow-hidden glass transition-all duration-700 cursor-pointer"
+      onClick={handleInfo}
       style={{
         // Dynamic shadow/glow based on the dominant color
         boxShadow: `0 20px 40px -15px ${dominantColor.replace('0.2', '0.1')}`,
@@ -112,71 +110,88 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
         )}
       </AnimatePresence>
 
-      <img
-        ref={imgRef}
-        src={posterImageSource}
-        alt={movieTitle}
-        crossOrigin="anonymous" // Crucial for CORS pixel access
-        onLoad={() => setIsLoaded(true)}
-        referrerPolicy="no-referrer"
-        className={`w-full h-full object-cover transition-all duration-1000 ${
-          isLoaded ? 'opacity-60 group-hover:opacity-90 grayscale-[0.3] group-hover:grayscale-0' : 'opacity-0'
-        }`}
-      />
+      {movie.posterUrl ? (
+        <img
+          ref={imgRef}
+          src={movie.posterUrl}
+          alt={movie.title}
+          crossOrigin="anonymous" // Crucial for CORS pixel access
+          onLoad={() => setIsLoaded(true)}
+          referrerPolicy="no-referrer"
+          className={`w-full h-full object-cover transition-all duration-1000 ${
+            isLoaded ? 'opacity-60 group-hover:opacity-100 grayscale-[0.3] group-hover:grayscale-0 scale-100 group-hover:scale-110' : 'opacity-0'
+          }`}
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-surface-container-highest/10">
+          <Sparkles className="text-primary/20 w-12 h-12" />
+        </div>
+      )}
 
       {/* Tonal Layering: Abyssal Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-surface-dim via-surface-dim/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-surface-dim via-surface-dim/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
 
       {/* Content Overlay */}
       <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
         <div className="flex flex-col gap-1">
-          {genre && (
+          {movie.soundtrackHighlight && (
             <span className="font-mono text-[10px] text-primary uppercase tracking-widest mb-1 block opacity-80 group-hover:opacity-100 transition-opacity">
-              {genre}
-            </span >
+              {movie.soundtrackHighlight}
+            </span>
           )}
           <h4 className="text-2xl font-serif leading-tight group-hover:text-primary transition-colors duration-500">
-            {movieTitle}
+            {movie.title}
           </h4>
           <div className="flex items-center gap-3 mt-2">
-            {releaseYear && (
+            {movie.releaseYear && (
               <span className="font-mono text-[10px] text-on-surface-variant">
-                {releaseYear}
+                {movie.releaseYear}
               </span>
             )}
-            {onDelete ? (
+            <div className="flex items-center gap-4 ml-auto">
+              {onDelete ? (
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onDelete(movie.title, movie.releaseYear); }}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-on-surface-variant hover:text-red-400 p-1"
+                  aria-label={`Remove ${movie.title} from vault`}
+                  title={`Remove ${movie.title} from vault`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              ) : (
+                <button 
+                  onClick={handleSave}
+                  disabled={isSaving || isSaved}
+                  className={`opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] uppercase font-mono tracking-widest ${
+                    isSaved ? 'text-green-400' : 'text-on-surface-variant hover:text-primary'
+                  }`}
+                  aria-label={isSaved ? `${movie.title} is already archived` : `Archive ${movie.title}`}
+                  title={isSaved ? `${movie.title} is already archived` : `Archive ${movie.title}`}
+                >
+                  {isSaving ? (
+                    <span className="animate-pulse">Archiving...</span>
+                  ) : isSaved ? (
+                    <>
+                      <Check className="w-3 h-3" />
+                      Archived
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-3 h-3" />
+                      Archive
+                    </>
+                  )}
+                </button>
+              )}
               <button 
-                onClick={(e) => { e.stopPropagation(); onDelete(movieTitle); }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-on-surface-variant hover:text-red-400"
+                onClick={handleInfo}
+                className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 p-1"
+                aria-label={`View details for ${movie.title}`}
+                title={`View details for ${movie.title}`}
               >
-                <Trash2 className="w-4 h-4" />
+                <Info className="w-4 h-4 text-on-surface-variant hover:text-white" />
               </button>
-            ) : (
-              <button 
-                onClick={handleSave}
-                disabled={isSaving || isSaved}
-                className={`opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] uppercase font-mono tracking-widest ${
-                  isSaved ? 'text-green-400' : 'text-on-surface-variant hover:text-primary'
-                }`}
-              >
-                {isSaving ? (
-                  <span className="animate-pulse">Archiving...</span>
-                ) : isSaved ? (
-                  <>
-                    <Check className="w-3 h-3" />
-                    Archived
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-3 h-3" />
-                    Archive
-                  </>
-                )}
-              </button>
-            )}
-            <button className="opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-              <Info className="w-4 h-4 text-on-surface-variant hover:text-white" />
-            </button>
+            </div>
           </div>
         </div>
       </div>

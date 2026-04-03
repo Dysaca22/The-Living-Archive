@@ -1,7 +1,8 @@
-import { Movie } from '../schemas/movieSchema';
+import { Movie } from '../types/movie';
 import { ExternalApiService } from './externalApiService';
 import { GeminiService } from './geminiService';
 import { PlatformStateManager } from './platformStateManager';
+import { MovieMappers } from '../mappers/movieMappers';
 
 export interface UIState {
   recommendations: Movie[];
@@ -39,19 +40,22 @@ export class PresentationController {
     const enrichedRecommendations = await Promise.all(
       rawRecommendations
         .filter(movie => !existingTitles.includes(movie.title.toLowerCase()))
-        .map(async (movie) => {
-          const poster = await ExternalApiService.resolveMovieArtwork(movie.tmdb_database_id || 0);
+        .map(async (zodMovie) => {
+          let tmdbId = zodMovie.tmdb_database_id;
           
-          // Final Data Contract for the UI
-          return {
-            ...movie,
-            poster,
-            // Ensure crossOrigin is handled at the component level, 
-            // but we provide the fully qualified URL here.
-          };
+          // Fallback: If TMDB ID is missing, try to search for it
+          if (!tmdbId) {
+            console.info(`TMDB ID missing for "${zodMovie.title}". Attempting search fallback...`);
+            tmdbId = await ExternalApiService.searchMovieId(zodMovie.title, zodMovie.release_year);
+          }
+
+          const posterUrl = await ExternalApiService.resolveMovieArtwork(tmdbId || 0);
+          
+          // Map to unified domain model
+          return MovieMappers.fromZod(zodMovie, posterUrl);
         })
     );
 
-    return enrichedRecommendations as Movie[];
+    return enrichedRecommendations;
   }
 }

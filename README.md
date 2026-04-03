@@ -1,20 +1,34 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# The Living Archive
 
-# Run and deploy your AI Studio app
+A sentient repository of cinematic history powered by Gemini AI and a Local-First BYOK architecture.
 
-This contains everything you need to run your app locally.
+## Features
+- **Cinematic Discovery**: Personalized movie recommendations using Gemini 1.5 Flash.
+- **Historical Resonance**: Daily context from Wikipedia "On This Day" to inspire discovery.
+- **The Vault**: Local-first archive to persist your cinematic resonances using `localStorage`.
+- **Noir Mode**: A high-contrast, grayscale visual filter for an immersive experience.
+- **BYOK (Bring Your Own Key)**: Full control over your Gemini and TMDB API keys.
+- **Export/Import**: Portability for your cinematic archive via JSON files.
 
-View your app in AI Studio: https://ai.studio/apps/168c6973-e0c0-430e-8e1a-2eacd86e6ccb
+## Setup
+1. **Gemini API Key**: Obtain a key from [Google AI Studio](https://aistudio.google.com/).
+2. **TMDB API Key**: Obtain a key from [The Movie Database](https://www.themoviedb.org/documentation/api).
+3. **Environment Variables**:
+   - Create a `.env` file (or use the AI Studio settings).
+   - Set `VITE_TMDB_API_KEY` with your TMDB key.
+   - (Optional) `GEMINI_API_KEY` can be set in the environment or provided via the UI.
 
-## Run Locally
+## Architecture
+- **Frontend**: React 19, Vite, Tailwind CSS 4, Framer Motion.
+- **Intelligence**: Google Gemini 1.5 Flash (Structured Outputs).
+- **Persistence**: Browser `localStorage` (Autonomous & Decentralized).
+- **APIs**: Wikipedia (History), TMDB (Posters).
 
-**Prerequisites:**  Node.js
+## Development
+```bash
+npm install
+npm run dev
+```
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## License
+MIT

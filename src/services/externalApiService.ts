@@ -81,6 +81,32 @@ export class ExternalApiService {
   }
 
   /**
+   * Fallback: Searches for a TMDB ID using title and year if Gemini fails to provide one.
+   */
+  public static async searchMovieId(title: string, year: number): Promise<number | undefined> {
+    if (!this.TMDB_API_KEY) return undefined;
+
+    try {
+      const url = `https://api.themoviedb.org/3/search/movie?api_key=${this.TMDB_API_KEY}&query=${encodeURIComponent(title)}&year=${year}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) return undefined;
+
+      const data = await response.json();
+      const results = data.results || [];
+
+      if (results.length > 0) {
+        return results[0].id;
+      }
+      
+      return undefined;
+    } catch (error) {
+      console.error(`Failed to search TMDB ID for ${title}:`, error);
+      return undefined;
+    }
+  }
+
+  /**
    * Comprehensive metadata fetch (The "fetch_movie_metadata" action).
    * Combines visual metadata with historical context.
    */

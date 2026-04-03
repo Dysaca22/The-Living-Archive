@@ -1,5 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { movieRecommendationSchema, MovieRecommendation } from "../schemas/movieSchema";
+import { AI_CONFIG } from "../constants/aiConfig";
+import { DISCOVERY_PROMPT } from "../prompts/discoveryPrompt";
 
 /**
  * Gemini Service for The Living Archive.
@@ -18,38 +20,21 @@ export class GeminiService {
   ): Promise<MovieRecommendation> {
     const ai = new GoogleGenAI({ apiKey });
     
-    const systemInstruction = `
-      Eres el Gestor de Estado Local de "The Living Archive". Tu función es orquestar las recomendaciones cinematográficas y gestionar su persistencia utilizando la memoria caché del dispositivo del usuario.
-
-      Reglas Operativas:
-      1. Entorno Aislado: Ya no interactúas con bases de datos externas. Todo el inventario de películas vive en la memoria local (caché) del cliente. No solicites IDs externos ni credenciales de red.
-      2. Evaluación de Estado Local: Antes de generar una nueva recomendación, debes procesar el inventario local proporcionado por el cliente para asegurar que no sugieras material previamente guardado.
-      3. Ejecución Estricta: Estás restringido a generar recomendaciones estructuradas que el cliente guardará en su memoria local.
-      4. Fallos de Memoria: Si el cliente reporta un error al intentar guardar (ej. límite de almacenamiento alcanzado), informa al usuario de manera sencilla que la "bóveda de memoria está llena" y sugiere limpiar la caché local.
-
-      Contexto Histórico del Día: ${historicalContext}
-
-      Películas ya guardadas en el archivo local (NO RECOMENDAR ESTAS):
-      ${existingTitles.join(', ')}
-    `;
-
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: AI_CONFIG.MODEL_NAME,
       contents: [
         {
           role: "user",
           parts: [
             {
-              text: `${systemInstruction}
-              
-              User Request: ${userPrompt}
-              
-              Generate a curated list of exactly 3 movie recommendations that bridge the user's request with the historical context provided.`
+              text: DISCOVERY_PROMPT.formatUserPrompt(userPrompt, historicalContext, existingTitles)
             }
           ]
         }
       ],
       config: {
+        systemInstruction: DISCOVERY_PROMPT.SYSTEM_INSTRUCTION,
+        temperature: AI_CONFIG.TEMPERATURE,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.ARRAY,
@@ -69,17 +54,37 @@ export class GeminiService {
     });
 
     const text = response.text;
-    if (!text) {
-      throw new Error("The Astral Curator returned an empty resonance. Try again.");
+    if (!text || text.trim() === "") {
+      throw new Error("The Astral Curator returned an empty resonance. The cinematic flow is currently dry.");
     }
 
     try {
       const data = JSON.parse(text);
-      // Validate with Zod to ensure runtime safety
-      return movieRecommendationSchema.parse(data);
+      
+      // 1. Strict Schema Validation
+      const validatedData = movieRecommendationSchema.parse(data);
+
+      // 2. Quantity Check
+      if (validatedData.length === 0) {
+        throw new Error("No cinematic resonances were found for this query.");
+      }
+
+      // 3. Deduplication (Self-check)
+      const uniqueTitles = new Set<string>();
+      const deduplicated = validatedData.filter(movie => {
+        const titleKey = movie.title.toLowerCase();
+        if (uniqueTitles.has(titleKey)) return false;
+        uniqueTitles.add(titleKey);
+        return true;
+      });
+
+      return deduplicated;
     } catch (error) {
-      console.error("Failed to parse astral data:", error);
-      throw new Error("The cinematic flow was corrupted. Re-initializing...");
+      console.error("Failed to parse or validate astral data:", error);
+      if (error instanceof SyntaxError) {
+        throw new Error("The cinematic flow was corrupted by malformed data. Re-initializing...");
+      }
+      throw error;
     }
   }
 }
