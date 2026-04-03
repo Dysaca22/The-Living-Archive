@@ -1,7 +1,7 @@
 # Release Checklist: The Living Archive (v1.0.0)
 
 ## 1. Environment Configuration
-- [ ] `VITE_TMDB_API_KEY` is set in the environment (AI Studio Secrets).
+- [ ] `TMDB_READ_ACCESS_TOKEN` is set in the environment (AI Studio Secrets).
 - [ ] `GEMINI_API_KEY` is either set in the environment or the user is prompted in the UI.
 - [ ] `.env.example` is up to date with all required variables.
 

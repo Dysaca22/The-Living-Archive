@@ -10,7 +10,7 @@ The project initially considered a Google Sheets backend for persistence. Howeve
 We will proceed with a **Local-First, BYOK (Bring Your Own Key)** architecture.
 
 ### Key Components:
-1. **Intelligence**: Google Gemini 1.5 Flash via `@google/genai`. Users provide their own API Key.
+1. **Intelligence**: Google Gemini 2.5 Flash via `@google/genai`. Users provide their own API Key.
 2. **Persistence**: Browser `localStorage` via `LocalCacheService`.
 3. **Metadata Enrichment**: 
    - **Visuals**: The Movie Database (TMDB) API.

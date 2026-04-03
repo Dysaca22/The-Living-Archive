@@ -53,6 +53,69 @@ async function startServer() {
     }
   });
 
+  /**
+   * API: TMDB Proxy
+   * Forwards requests to The Movie Database using a Read Access Token.
+   * Keeps the token hidden from the frontend.
+   */
+  app.get("/api/tmdb/movie/:id", async (req, res) => {
+    const token = process.env.TMDB_READ_ACCESS_TOKEN;
+    if (!token) {
+      return res.status(503).json({ error: "TMDB access not configured." });
+    }
+
+    try {
+      const response = await fetch(`https://api.themoviedb.org/3/movie/${req.params.id}`, {
+        headers: {
+          "accept": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        return res.status(response.status).json({ error: `TMDB API error: ${response.status}` });
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("TMDB Movie Fetch Error:", error);
+      res.status(500).json({ error: "Failed to fetch movie from TMDB." });
+    }
+  });
+
+  app.get("/api/tmdb/search", async (req, res) => {
+    const token = process.env.TMDB_READ_ACCESS_TOKEN;
+    const { query, year } = req.query;
+
+    if (!token) {
+      return res.status(503).json({ error: "TMDB access not configured." });
+    }
+
+    try {
+      const searchUrl = new URL("https://api.themoviedb.org/3/search/movie");
+      searchUrl.searchParams.append("query", query as string);
+      if (year) searchUrl.searchParams.append("year", year as string);
+
+      const response = await fetch(searchUrl.toString(), {
+        headers: {
+          "accept": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        return res.status(response.status).json({ error: `TMDB API error: ${response.status}` });
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("TMDB Search Error:", error);
+      res.status(500).json({ error: "Failed to search TMDB." });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

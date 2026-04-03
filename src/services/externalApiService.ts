@@ -13,8 +13,6 @@ interface TmdbMovieDetails {
 }
 
 export class ExternalApiService {
-  private static readonly TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-
   /**
    * Fetches a random historical event for the current day.
    * Uses Wikipedia's "On This Day" REST API for better CORS support.
@@ -51,20 +49,19 @@ export class ExternalApiService {
 
   /**
    * Resolves the full poster URL for a given TMDB ID.
-   * Fetches metadata from The Movie Database API.
+   * Fetches metadata from the internal server proxy.
    */
   public static async resolveMovieArtwork(tmdbDatabaseId: number): Promise<string> {
-    if (!this.TMDB_API_KEY) {
-      console.warn('VITE_TMDB_API_KEY is missing. Returning fallback artwork.');
-      return FALLBACK_POSTER_URL;
-    }
-
     try {
-      const url = `https://api.themoviedb.org/3/movie/${tmdbDatabaseId}?api_key=${this.TMDB_API_KEY}`;
-      const response = await fetch(url);
+      const response = await fetch(`/api/tmdb/movie/${tmdbDatabaseId}`);
 
       if (!response.ok) {
-        throw new Error(`TMDB API error: ${response.status}`);
+        if (response.status === 503) {
+          console.warn('TMDB access not configured on server. Returning fallback artwork.');
+        } else {
+          throw new Error(`TMDB proxy error: ${response.status}`);
+        }
+        return FALLBACK_POSTER_URL;
       }
 
       const data: TmdbMovieDetails = await response.json();
@@ -82,12 +79,11 @@ export class ExternalApiService {
 
   /**
    * Fallback: Searches for a TMDB ID using title and year if Gemini fails to provide one.
+   * Calls the internal server proxy.
    */
   public static async searchMovieId(title: string, year: number): Promise<number | undefined> {
-    if (!this.TMDB_API_KEY) return undefined;
-
     try {
-      const url = `https://api.themoviedb.org/3/search/movie?api_key=${this.TMDB_API_KEY}&query=${encodeURIComponent(title)}&year=${year}`;
+      const url = `/api/tmdb/search?query=${encodeURIComponent(title)}&year=${year}`;
       const response = await fetch(url);
       
       if (!response.ok) return undefined;

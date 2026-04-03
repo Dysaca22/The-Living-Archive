@@ -172,7 +172,12 @@ export default function App() {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "An unknown error occurred in the astral flow.";
-      setError(`Error in Discovery: ${message}. Please check your API key or network connection.`);
+      // If the message already contains specific guidance, don't append generic text
+      if (message.includes("Astral Key") || message.includes("astral model") || message.includes("congested")) {
+        setError(`Discovery Error: ${message}`);
+      } else {
+        setError(`Error in Discovery: ${message}. Please check your API key or network connection.`);
+      }
     } finally {
       setIsLoading(false);
     }
