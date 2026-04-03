@@ -8,15 +8,6 @@
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 const FALLBACK_POSTER_URL = 'https://picsum.photos/seed/archive-fallback/500/750?blur=2';
 
-interface ZenQuotesResponse {
-  data: {
-    Events: Array<{
-      text: string;
-      year: string;
-    }>;
-  };
-}
-
 interface TmdbMovieDetails {
   poster_path: string | null;
 }
@@ -26,28 +17,32 @@ export class ExternalApiService {
 
   /**
    * Fetches a random historical event for the current day.
-   * Uses ZenQuotes "Today in History" public API.
+   * Uses Wikipedia's "On This Day" REST API for better CORS support.
    */
   public static async fetchHistoricalDailyContext(): Promise<string> {
     try {
-      const response = await fetch('https://today.zenquotes.io/api');
+      const now = new Date();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      
+      const response = await fetch(`https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`);
       
       if (!response.ok) {
-        throw new Error(`ZenQuotes API error: ${response.status}`);
+        throw new Error(`Wikipedia API error: ${response.status}`);
       }
 
-      const result: ZenQuotesResponse = await response.json();
-      const events = result.data?.Events || [];
+      const result = await response.json();
+      const events = result.events || [];
 
       if (events.length === 0) {
         return "A quiet day in the annals of history, where the astral flow remained undisturbed.";
       }
 
       // Pseudo-random selection of a high-impact event
-      const randomIndex = Math.floor(Math.random() * events.length);
+      const randomIndex = Math.floor(Math.random() * Math.min(events.length, 20)); // Focus on top events
       const event = events[randomIndex];
 
-      return `${event.year}: ${event.text.replace(/<[^>]*>?/gm, '')}`; // Clean HTML tags if any
+      return `${event.year}: ${event.text}`;
     } catch (error) {
       console.error('Failed to fetch historical context:', error);
       return "History is currently obscured by the astral mists. Seek your own path.";
@@ -83,5 +78,23 @@ export class ExternalApiService {
       console.error(`Failed to resolve artwork for TMDB ID ${tmdbDatabaseId}:`, error);
       return FALLBACK_POSTER_URL;
     }
+  }
+
+  /**
+   * Comprehensive metadata fetch (The "fetch_movie_metadata" action).
+   * Combines visual metadata with historical context.
+   */
+  public static async fetchMovieMetadata(tmdbId: number) {
+    const [artworkUrl, historicalContext] = await Promise.all([
+      this.resolveMovieArtwork(tmdbId),
+      this.fetchHistoricalDailyContext()
+    ]);
+
+    return {
+      tmdbId,
+      artworkUrl,
+      historicalContext,
+      timestamp: new Date().toISOString()
+    };
   }
 }

@@ -1,23 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Key, Sparkles, Archive, Search, Moon, User, LogOut, Info } from 'lucide-react';
+import { Key, Sparkles, Archive, Search, Moon, User, LogOut, Info, Loader2, AlertCircle } from 'lucide-react';
 import { useGeminiCredentials } from './hooks/useGeminiCredentials';
 import { CinematicMovieCard } from './components/CinematicMovieCard';
-
-const FEATURED_MOVIES = [
-  {
-    title: "Inception",
-    poster: "https://picsum.photos/seed/inception/800/1200",
-    year: 2010,
-    genre: "Sci-Fi Noir"
-  },
-  {
-    title: "The Night Walker",
-    poster: "https://picsum.photos/seed/nightwalker/800/1200",
-    year: 1964,
-    genre: "Spectral Horror"
-  }
-];
+import { GeminiService } from './services/geminiService';
+import { ExternalApiService } from './services/externalApiService';
+import { GoogleSheetsIntegrationService } from './services/googleSheetsIntegrationService';
+import { PlatformStateManager } from './services/platformStateManager';
+import { PresentationController } from './services/presentationController';
+import { Movie } from './schemas/movieSchema';
 
 /**
  * The Living Archive: A sentient repository of cinematic history.
@@ -26,11 +17,67 @@ const FEATURED_MOVIES = [
 export default function App() {
   const { apiKey, isReady, saveKey, clearKey } = useGeminiCredentials();
   const [inputKey, setInputKey] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [recommendations, setRecommendations] = useState<Movie[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [historicalContext, setHistoricalContext] = useState<string>('');
 
-  const handleSave = (e: React.FormEvent) => {
+  // Initial load: Fetch historical context for today
+  useEffect(() => {
+    if (isReady) {
+      ExternalApiService.fetchHistoricalDailyContext().then(setHistoricalContext);
+    }
+  }, [isReady]);
+
+  const handleSaveKey = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputKey.trim()) {
       saveKey(inputKey);
+    }
+  };
+
+  /**
+   * Coordinates the saving of a movie to the archive.
+   */
+  const handleSaveToArchive = async (movie: { title: string; year: number; id: number }) => {
+    try {
+      await PlatformStateManager.syncToSheetsProxy(movie);
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  /**
+   * The Discovery Flow (Presentation Controller Orchestration):
+   * Consolidates all astral nodes into a final UI contract.
+   */
+  const handleDiscover = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim() || !apiKey) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Presentation Controller consolidates all phases
+      const enrichedResults = await PresentationController.discoverCinematicResonances(
+        apiKey,
+        searchQuery,
+        historicalContext
+      );
+
+      if (enrichedResults.length === 0) {
+        setError("The archive already contains these resonances. Try a different query.");
+      } else {
+        setRecommendations(enrichedResults);
+      }
+    } catch (err: any) {
+      const message = err.message || "An unknown error occurred in the astral flow.";
+      setError(`Error in Discovery: ${message}. Please check your API key or network connection.`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -58,7 +105,7 @@ export default function App() {
       <main className="flex-1 pt-24 px-8 pb-12 relative overflow-hidden">
         <AnimatePresence mode="wait">
           {!isReady ? (
-            /* Credentials Blocker (Task 1) */
+            /* Credentials Blocker */
             <motion.div
               key="blocker"
               initial={{ opacity: 0, y: 20 }}
@@ -76,20 +123,17 @@ export default function App() {
                   <h2 className="text-2xl font-serif mb-2">Astral Connection Required</h2>
                   <p className="text-on-surface-variant text-sm leading-relaxed">
                     To access the Living Archive, you must provide your own Gemini API key. 
-                    This key is stored locally in your browser and never leaves your device.
                   </p>
                 </div>
 
-                <form onSubmit={handleSave} className="w-full flex flex-col gap-4">
-                  <div className="relative">
-                    <input
-                      type="password"
-                      placeholder="Enter Gemini API Key..."
-                      value={inputKey}
-                      onChange={(e) => setInputKey(e.target.value)}
-                      className="w-full bg-surface-container-highest/50 border-b border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors font-mono"
-                    />
-                  </div>
+                <form onSubmit={handleSaveKey} className="w-full flex flex-col gap-4">
+                  <input
+                    type="password"
+                    placeholder="Enter Gemini API Key..."
+                    value={inputKey}
+                    onChange={(e) => setInputKey(e.target.value)}
+                    className="w-full bg-surface-container-highest/50 border-b border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors font-mono"
+                  />
                   <button
                     type="submit"
                     className="w-full bg-primary text-on-primary py-3 rounded-lg font-medium hover:bg-opacity-90 transition-all flex items-center justify-center gap-2"
@@ -98,16 +142,6 @@ export default function App() {
                     Initialize Archive
                   </button>
                 </form>
-                
-                <a 
-                  href="https://aistudio.google.com/app/apikey" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-xs text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1"
-                >
-                  <Info className="w-3 h-3" />
-                  Get your free key from Google AI Studio
-                </a>
               </div>
             </motion.div>
           ) : (
@@ -127,47 +161,91 @@ export default function App() {
                   Discover the Essence
                 </motion.h1>
                 <p className="font-mono text-on-surface-variant uppercase tracking-[0.3em] text-xs">
-                  Sift through the astral records of cinema
+                  {historicalContext || "Sift through the astral records of cinema"}
                 </p>
               </header>
 
-              {/* Search Bar (Astral Style) */}
-              <div className="max-w-2xl mx-auto mb-24 relative">
+              {/* Search Bar */}
+              <form onSubmit={handleDiscover} className="max-w-2xl mx-auto mb-24 relative">
                 <div className="glass p-1 rounded-full flex items-center gap-4 px-6 h-14">
-                  <Sparkles className="text-primary w-5 h-5" />
+                  <Sparkles className={`w-5 h-5 ${isLoading ? 'text-primary animate-spin' : 'text-primary'}`} />
                   <input 
                     type="text" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search by mood, visual style, or emotional resonance..."
                     className="flex-1 bg-transparent border-none outline-none text-sm"
+                    disabled={isLoading}
                   />
-                  <div className="font-mono text-[10px] text-on-surface-variant border border-white/10 px-2 py-1 rounded uppercase">
-                    Semantic Mode
-                  </div>
+                  <button 
+                    type="submit"
+                    disabled={isLoading}
+                    className="font-mono text-[10px] text-on-surface-variant border border-white/10 px-4 py-2 rounded-full uppercase hover:bg-white/5 transition-colors"
+                  >
+                    {isLoading ? "Sifting..." : "Discover"}
+                  </button>
                 </div>
-              </div>
+                
+                <AnimatePresence>
+                  {error && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute top-full left-0 right-0 mt-4 p-4 glass border-primary/20 rounded-xl flex items-center gap-3 text-xs text-primary"
+                    >
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      {error}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </form>
 
-              {/* Featured Section */}
+              {/* Recommendations Section */}
               <section className="grid grid-cols-1 md:grid-cols-3 gap-12">
                 <div className="col-span-1 flex flex-col gap-4">
-                  <h3 className="text-xl font-serif italic">The Abyssal Archive</h3>
+                  <h3 className="text-xl font-serif italic">
+                    {recommendations.length > 0 ? "Astral Resonances" : "The Abyssal Archive"}
+                  </h3>
                   <p className="text-on-surface-variant text-sm leading-relaxed border-l border-primary/30 pl-4">
-                    Where shadows coalesce into narratives. A collection of the primal and the profound.
+                    {recommendations.length > 0 
+                      ? "The curator has found these cinematic echoes for you."
+                      : "Where shadows coalesce into narratives. A collection of the primal and the profound."}
                   </p>
                 </div>
                 
-                {/* Cinematic Movie Cards (Task 5) */}
-                {FEATURED_MOVIES.map((movie, i) => (
-                  <CinematicMovieCard
-                    key={i}
-                    movieTitle={movie.title}
-                    posterImageSource={movie.poster}
-                    releaseYear={movie.year}
-                    genre={movie.genre}
-                  />
-                ))}
+                <AnimatePresence mode="popLayout">
+                  {recommendations.length > 0 ? (
+                    recommendations.map((movie: any, i) => (
+                      <motion.div
+                        key={movie.title}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.1 }}
+                      >
+                        <CinematicMovieCard
+                          movieTitle={movie.title}
+                          posterImageSource={movie.poster}
+                          releaseYear={movie.release_year}
+                          genre={movie.soundtrack_highlight}
+                          tmdbId={movie.tmdb_database_id}
+                          onSave={handleSaveToArchive}
+                        />
+                      </motion.div>
+                    ))
+                  ) : (
+                    /* Default Mockup if no results */
+                    <div className="col-span-2 flex items-center justify-center h-64 border border-dashed border-white/5 rounded-2xl">
+                      <div className="text-center text-on-surface-variant">
+                        <Archive className="w-8 h-8 mx-auto mb-4 opacity-20" />
+                        <p className="text-xs font-mono uppercase tracking-widest">Enter a query to begin discovery</p>
+                      </div>
+                    </div>
+                  )}
+                </AnimatePresence>
               </section>
 
-              {/* Footer / Status */}
+              {/* Footer */}
               <footer className="mt-32 flex items-center justify-between border-t border-white/5 pt-8 font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">
                 <div className="flex gap-8">
                   <span>Node_Link: Successful</span>

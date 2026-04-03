@@ -1,30 +1,53 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { extractColors } from 'extract-colors';
-import { Sparkles, Info } from 'lucide-react';
+import { Sparkles, Info, Save, Check } from 'lucide-react';
 
 interface CinematicMovieCardProps {
   movieTitle: string;
   posterImageSource: string;
   releaseYear?: number;
   genre?: string;
+  tmdbId?: number;
+  onSave?: (movie: { title: string; year: number; id: number }) => Promise<void>;
 }
 
 /**
  * CinematicMovieCard: A high-performance React component that extracts
  * the dominant color from a movie poster and applies it as a dynamic background glow.
- * 
- * Implements the "The Living Archive" design system with tonal layering and astral auras.
  */
 export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
   movieTitle,
   posterImageSource,
   releaseYear,
-  genre
+  genre,
+  tmdbId,
+  onSave
 }) => {
-  const [dominantColor, setDominantColor] = useState<string>('rgba(255, 77, 0, 0.15)'); // Default Astral Orange
+  const [dominantColor, setDominantColor] = useState<string>('rgba(255, 77, 0, 0.15)');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+
+  const handleSave = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onSave || isSaved || isSaving) return;
+
+    setIsSaving(true);
+    try {
+      await onSave({
+        title: movieTitle,
+        year: releaseYear || 0,
+        id: tmdbId || 0
+      });
+      setIsSaved(true);
+    } catch (error) {
+      console.error("Failed to save movie:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   useEffect(() => {
     const extractColorFromImage = async () => {
@@ -119,6 +142,27 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
                 {releaseYear}
               </span>
             )}
+            <button 
+              onClick={handleSave}
+              disabled={isSaving || isSaved}
+              className={`opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] uppercase font-mono tracking-widest ${
+                isSaved ? 'text-green-400' : 'text-on-surface-variant hover:text-primary'
+              }`}
+            >
+              {isSaving ? (
+                <span className="animate-pulse">Archiving...</span>
+              ) : isSaved ? (
+                <>
+                  <Check className="w-3 h-3" />
+                  Archived
+                </>
+              ) : (
+                <>
+                  <Save className="w-3 h-3" />
+                  Archive
+                </>
+              )}
+            </button>
             <button className="opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               <Info className="w-4 h-4 text-on-surface-variant hover:text-white" />
             </button>
