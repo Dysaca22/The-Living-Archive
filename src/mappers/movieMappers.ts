@@ -1,4 +1,4 @@
-import { Movie as ZodMovie } from '../schemas/movieSchema';
+import { Movie as ZodMovie, QuoteSceneMatch } from '../schemas/movieSchema';
 import { Movie, VaultMovieRecord } from '../types/movie';
 
 /**
@@ -14,9 +14,25 @@ export class MovieMappers {
       title: zodMovie.title,
       releaseYear: zodMovie.release_year,
       narrativeJustification: zodMovie.narrative_justification,
+      mediaType: zodMovie.media_type === 'tv' ? 'tv' : 'movie',
       tmdbId: zodMovie.tmdb_database_id,
       posterUrl: posterUrl,
       soundtrackHighlight: zodMovie.soundtrack_highlight
+    };
+  }
+
+  /**
+   * Maps a quote/scene Gemini match to the unified Movie domain model.
+   */
+  public static fromQuoteScene(match: QuoteSceneMatch, posterUrl?: string): Movie {
+    return {
+      title: match.title,
+      releaseYear: match.release_year,
+      narrativeJustification: match.match_explanation,
+      mediaType: match.media_type === 'tv' ? 'tv' : 'movie',
+      tmdbId: match.tmdb_database_id,
+      posterUrl: posterUrl,
+      soundtrackHighlight: match.soundtrack_highlight,
     };
   }
 
@@ -27,7 +43,7 @@ export class MovieMappers {
     return {
       ...movie,
       timestamp: new Date().toISOString(),
-      status: 'pending'
+      status: 'no_visto'
     };
   }
 }

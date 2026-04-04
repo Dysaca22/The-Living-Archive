@@ -1,97 +1,44 @@
 import { LocalCacheService } from './localCacheService';
-import { RemotePersistenceService } from './remotePersistenceService';
-import { Movie, VaultMovieRecord } from '../types/movie';
+import { MediaType, VaultMovieRecord } from '../types/movie';
 
 /**
- * PlatformStateManager: Coordinates reading and writing of movie recommendations.
- * Ensures transactional integrity using the browser's local cache and remote sync.
+ * PlatformStateManager coordinates local-only persistence for the MVP.
  */
 export class PlatformStateManager {
-  
   /**
-   * evaluate_current_state: Checks the current archive in local cache.
-   * Returns a list of existing movie titles for deduplication.
+   * Returns normalized title inventory for prompt-level filtering.
    */
   public static async evaluateCurrentState(): Promise<string[]> {
     try {
       const movies = LocalCacheService.getMovies();
-      return movies.map((m: VaultMovieRecord) => m.title.toLowerCase());
+      return movies.map((movie) => movie.title.toLowerCase().trim());
     } catch (error) {
-      console.error("Error evaluating current state:", error);
-      throw new Error("Error al acceder a la memoria local del dispositivo.");
+      console.error('Error evaluating current state:', error);
+      throw new Error('Error al acceder a la memoria local del dispositivo.');
     }
   }
 
-  /**
-   * evaluateCurrentStateSync: Synchronous version for initial load.
-   */
   public static evaluateCurrentStateSync(): VaultMovieRecord[] {
     return LocalCacheService.getMovies();
   }
 
-  /**
-   * deleteFromLocalCache: Removes a movie from the local archive.
-   */
-  public static deleteFromLocalCache(title: string, releaseYear: number): void {
-    LocalCacheService.deleteMovie(title, releaseYear);
+  public static deleteFromLocalCache(title: string, releaseYear: number, mediaType: MediaType = 'movie'): void {
+    LocalCacheService.deleteMovie(title, releaseYear, mediaType);
   }
 
   /**
-   * restoreFromRemote: Fetches the remote vault and merges it into local cache.
-   */
-  public static async restoreFromRemote(): Promise<number> {
-    try {
-      const remoteMovies = await RemotePersistenceService.fetchRemoteVault();
-      if (remoteMovies.length === 0) return 0;
-
-      const localMovies = LocalCacheService.getMovies();
-      const localKeys = new Set(localMovies.map(m => `${m.title.toLowerCase()}_${m.releaseYear}`));
-      
-      let restoredCount = 0;
-      for (const movie of remoteMovies) {
-        const key = `${movie.title.toLowerCase()}_${movie.releaseYear}`;
-        if (!localKeys.has(key)) {
-          LocalCacheService.saveMovie(movie);
-          restoredCount++;
-        }
-      }
-      return restoredCount;
-    } catch (error) {
-      console.error("Restore failed:", error);
-      throw new Error("No se pudo sincronizar con la nube.");
-    }
-  }
-
-  /**
-   * sync_to_local_cache: Saves a movie recommendation to the local cache and remote vault.
-   * Implements a Dual-Write strategy for maximum resilience.
+   * Saves recommendations to local cache only.
    */
   public static async syncToLocalCache(movie: VaultMovieRecord): Promise<void> {
     try {
-      // Step 1: Verify current state before registration
-      const existingTitles = await this.evaluateCurrentState();
-      
-      if (existingTitles.includes(movie.title.toLowerCase())) {
-        console.warn(`Movie "${movie.title}" already exists in the archive.`);
-        return;
-      }
-
-      // Step 2: Perform transactional write to local cache (Primary)
       LocalCacheService.saveMovie(movie);
-
-      // Step 3: Attempt asynchronous sync to remote vault (Secondary)
-      // This is non-blocking to ensure local performance
-      RemotePersistenceService.syncMovie(movie).catch(err => {
-        console.error("Background Remote Sync Failed:", err);
-      });
-
     } catch (error) {
-      console.error("Error syncing to local cache:", error);
-      const message = error instanceof Error ? error.message : "";
-      if (message.includes("vault is full")) {
+      console.error('Error syncing to local cache:', error);
+      const message = error instanceof Error ? error.message : '';
+      if (message.includes('vault is full')) {
         throw error;
       }
-      throw new Error("Error al guardar: La bóveda de memoria no está disponible.");
+      throw new Error('Error al guardar: La bóveda de memoria no está disponible.');
     }
   }
 }

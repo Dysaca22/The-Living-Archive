@@ -8,7 +8,7 @@ import { Movie, ViewingStatus } from '../types/movie';
 interface CinematicMovieCardProps {
   movie: Movie;
   onSave?: (movie: Movie) => Promise<void>;
-  onDelete?: (title: string, releaseYear: number) => void;
+  onDelete?: (movie: Movie) => void;
   onInfo?: (movie: Movie) => void;
   isSaved?: boolean;
   status?: ViewingStatus;
@@ -26,6 +26,12 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
   isSaved: isSavedProp = false,
   status
 }) => {
+  const statusLabel: Record<ViewingStatus, string> = {
+    no_visto: 'No visto',
+    en_proceso: 'En proceso',
+    visto: 'Visto',
+  };
+
   const [dominantColor, setDominantColor] = useState<string>('rgba(255, 77, 0, 0.15)');
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -110,10 +116,10 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
       {/* Status Badge */}
       {isSaved && status && (
         <div className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full glass border border-white/10 flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-primary">
-          {status === 'pending' && <Clock className="w-3 h-3" />}
-          {status === 'watched' && <CheckCircle2 className="w-3 h-3" />}
-          {status === 'archived' && <ArchiveIcon className="w-3 h-3" />}
-          {status}
+          {status === 'no_visto' && <Clock className="w-3 h-3" />}
+          {status === 'en_proceso' && <ArchiveIcon className="w-3 h-3" />}
+          {status === 'visto' && <CheckCircle2 className="w-3 h-3" />}
+          {statusLabel[status]}
         </div>
       )}
 
@@ -183,10 +189,10 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
             <div className="flex items-center gap-4 ml-auto">
               {onDelete ? (
                 <button 
-                  onClick={(e) => { e.stopPropagation(); onDelete(movie.title, movie.releaseYear); }}
+                  onClick={(e) => { e.stopPropagation(); onDelete(movie); }}
                   className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-on-surface-variant hover:text-red-400 p-1 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-red-400 focus-visible:outline-none rounded"
-                  aria-label={`Remove ${movie.title} from vault`}
-                  title={`Remove ${movie.title} from vault`}
+                  aria-label={`Quitar ${movie.title} de la bóveda`}
+                  title={`Quitar ${movie.title} de la bóveda`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -197,20 +203,20 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
                   className={`opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] uppercase font-mono tracking-widest focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-primary focus-visible:outline-none ${
                     isSaved ? 'text-green-400' : 'text-on-surface-variant hover:text-primary'
                   }`}
-                  aria-label={isSaved ? `${movie.title} is already archived` : `Archive ${movie.title}`}
-                  title={isSaved ? `${movie.title} is already archived` : `Archive ${movie.title}`}
+                  aria-label={isSaved ? `${movie.title} ya está guardada` : `Guardar ${movie.title}`}
+                  title={isSaved ? `${movie.title} ya está guardada` : `Guardar ${movie.title}`}
                 >
                   {isSaving ? (
-                    <span className="animate-pulse">Archiving...</span>
+                    <span className="animate-pulse">Guardando...</span>
                   ) : isSaved ? (
                     <>
                       <Check className="w-3 h-3" />
-                      Archived
+                      Guardado
                     </>
                   ) : (
                     <>
                       <Save className="w-3 h-3" />
-                      Archive
+                      Guardar
                     </>
                   )}
                 </button>
@@ -218,8 +224,8 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
               <button 
                 onClick={handleInfo}
                 className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 p-1 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-white focus-visible:outline-none rounded"
-                aria-label={`View details for ${movie.title}`}
-                title={`View details for ${movie.title}`}
+                aria-label={`Ver detalle de ${movie.title}`}
+                title={`Ver detalle de ${movie.title}`}
               >
                 <Info className="w-4 h-4 text-on-surface-variant hover:text-white" />
               </button>

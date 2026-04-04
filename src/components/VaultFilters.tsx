@@ -9,10 +9,10 @@ interface VaultFiltersProps {
 
 export const VaultFilters: React.FC<VaultFiltersProps> = ({ currentFilter, onFilterChange }) => {
   const filters = [
-    { id: 'all', label: 'All', icon: LayoutGrid },
-    { id: 'pending', label: 'Pending', icon: Clock },
-    { id: 'watched', label: 'Watched', icon: CheckCircle2 },
-    { id: 'archived', label: 'Archived', icon: ArchiveIcon },
+    { id: 'all', label: 'Todos', icon: LayoutGrid },
+    { id: 'no_visto', label: 'No visto', icon: Clock },
+    { id: 'en_proceso', label: 'En proceso', icon: ArchiveIcon },
+    { id: 'visto', label: 'Visto', icon: CheckCircle2 },
   ] as const;
 
   return (
