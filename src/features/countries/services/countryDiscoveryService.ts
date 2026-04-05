@@ -117,8 +117,8 @@ async function discoverByOriginCountry(mediaType: TmdbMediaType, countryCode: st
   const cacheKey = `countries:discover:${mediaType}:${countryCode}`;
   const context =
     mediaType === 'movie'
-      ? `Descubrimiento por pais de origen (${countryCode}).`
-      : `Series por pais de origen (${countryCode}).`;
+      ? `Descubrimiento por país de origen (${countryCode}).`
+      : `Series por país de origen (${countryCode}).`;
   const endpoint = `/api/tmdb/discover/${mediaType}?with_origin_country=${countryCode}&sort_by=popularity.desc&vote_count.gte=60&include_adult=false`;
 
   return withSimpleCache(cacheKey, CACHE_TTL_MS, async () => fetchTmdbList(endpoint, mediaType, context));

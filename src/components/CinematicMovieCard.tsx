@@ -15,7 +15,7 @@ interface CinematicMovieCardProps {
 }
 
 /**
- * Card cinematografica con color dominante de portada.
+ * Card cinematográfica con color dominante de portada.
  */
 export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
   movie,
@@ -51,7 +51,7 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
       await onSave(movie);
       setIsSaved(true);
     } catch (error) {
-      console.error('No se pudo guardar el titulo:', error);
+      console.error('No se pudo guardar el título:', error);
     } finally {
       setIsSaving(false);
     }
@@ -192,8 +192,8 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
                     onDelete(movie);
                   }}
                   className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-on-surface-variant hover:text-red-400 p-1 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-red-400 focus-visible:outline-none rounded"
-                  aria-label={`Quitar ${movie.title} de la boveda`}
-                  title={`Quitar ${movie.title} de la boveda`}
+                  aria-label={`Quitar ${movie.title} de la bóveda`}
+                  title={`Quitar ${movie.title} de la bóveda`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -204,8 +204,8 @@ export const CinematicMovieCard: React.FC<CinematicMovieCardProps> = ({
                   className={`opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] uppercase font-mono tracking-widest focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-primary focus-visible:outline-none ${
                     isSaved ? 'text-green-400' : 'text-on-surface-variant hover:text-primary'
                   }`}
-                  aria-label={isSaved ? `${movie.title} ya esta guardada` : `Guardar ${movie.title}`}
-                  title={isSaved ? `${movie.title} ya esta guardada` : `Guardar ${movie.title}`}
+                  aria-label={isSaved ? `${movie.title} ya está guardada` : `Guardar ${movie.title}`}
+                  title={isSaved ? `${movie.title} ya está guardada` : `Guardar ${movie.title}`}
                 >
                   {isSaving ? (
                     <span className="animate-pulse">Guardando...</span>

@@ -30,7 +30,7 @@ function deduplicateMovies(items: Movie[]): Movie[] {
 
 async function discoverByGenres(category: CategoryDefinition): Promise<CategoryDiscoveryResult> {
   if (category.discovery.type !== 'genres') {
-    throw new Error('Estrategia de descubrimiento por genero invalida.');
+    throw new Error('Estrategia de descubrimiento por género inválida.');
   }
 
   const [movieItems, tvItems] = await Promise.all([
@@ -38,13 +38,13 @@ async function discoverByGenres(category: CategoryDefinition): Promise<CategoryD
       'movie',
       category.discovery.movieGenres,
       `category:${category.slug}`,
-      `Seleccion de ${category.label} en peliculas.`
+      `Selección de ${category.label} en películas.`
     ),
     discoverMediaByGenres(
       'tv',
       category.discovery.tvGenres,
       `category:${category.slug}`,
-      `Seleccion de ${category.label} en series.`
+      `Selección de ${category.label} en series.`
     ),
   ]);
 
@@ -56,7 +56,7 @@ async function discoverByGenres(category: CategoryDefinition): Promise<CategoryD
 
 async function discoverEditorial(category: CategoryDefinition): Promise<CategoryDiscoveryResult> {
   if (category.discovery.type !== 'editorial') {
-    throw new Error('Estrategia editorial de descubrimiento invalida.');
+    throw new Error('Estrategia editorial de descubrimiento inválida.');
   }
 
   const queryResults = await Promise.all(

@@ -14,7 +14,7 @@ interface PromptDefinition {
 
 function formatInventory(existingTitles: string[]): string {
   if (existingTitles.length === 0) {
-    return 'Inventario local: vacio.';
+    return 'Inventario local: vacío.';
   }
   return `Inventario local (evitar repetir en modo general): ${existingTitles.join(', ')}`;
 }
@@ -25,14 +25,14 @@ Eres un curador de cine y series para un producto local-first.
 Objetivo: generar descubrimiento general de alta relevancia con salida JSON estricta.
 
 Reglas:
-1. Prioriza titulos reales y conocidos; evita inventar contenido.
-2. Usa movie o tv segun corresponda.
-3. Incluye narrativa breve y util, no texto poetico.
-4. En este flujo, evita recomendar titulos ya guardados en inventario local.
-5. Devuelve entre 1 y N resultados segun el limite solicitado por el cliente.
+1. Prioriza títulos reales y conocidos; evita inventar contenido.
+2. Usa movie o tv según corresponda.
+3. Incluye narrativa breve y útil, no texto poético.
+4. En este flujo, evita recomendar títulos ya guardados en inventario local.
+5. Devuelve entre 1 y N resultados según el límite solicitado por el cliente.
 `.trim(),
   formatUserPrompt: ({ userPrompt, historicalContext, existingTitles, count }) => `
---- CONTEXTO DEL DIA ---
+--- CONTEXTO DEL DÍA ---
 ${historicalContext}
 
 --- INVENTARIO LOCAL ---
@@ -42,34 +42,34 @@ ${formatInventory(existingTitles)}
 ${userPrompt}
 
 --- INSTRUCCION ---
-Devuelve maximo ${count} recomendaciones de descubrimiento general (no exactamente una cantidad fija).
+Devuelve máximo ${count} recomendaciones de descubrimiento general (no exactamente una cantidad fija).
 `.trim(),
 };
 
 const QUOTE_SCENE_PROMPT: PromptDefinition = {
   systemInstruction: `
 Eres un motor de matching de frases y escenas famosas para cine y series.
-Objetivo: mapear una frase memorable, una escena conocida o una descripcion parcial a titulos plausibles con confianza.
+Objetivo: mapear una frase memorable, una escena conocida o una descripción parcial a títulos plausibles con confianza.
 
 Reglas:
 1. Si la entrada parece cita exacta, usa match_mode=quote_exact.
-2. Si la entrada es descripcion de escena sin cita literal, usa match_mode=scene_description.
+2. Si la entrada es descripción de escena sin cita literal, usa match_mode=scene_description.
 3. Si solo hay semejanza conceptual, usa match_mode=theme_similarity y baja la confianza.
 4. confidence_score debe estar en rango 0..1.
-5. Si hay ambiguedad real, llena ambiguity_note explicando la confusion.
-6. Devuelve entre 1 y N resultados segun el limite solicitado por el cliente.
+5. Si hay ambigüedad real, llena ambiguity_note explicando la confusión.
+6. Devuelve entre 1 y N resultados según el límite solicitado por el cliente.
 `.trim(),
   formatUserPrompt: ({ userPrompt, historicalContext, count }) => `
 --- ENTRADA DEL USUARIO ---
 ${userPrompt}
 
---- CONTEXTO AUXILIAR DEL DIA ---
+--- CONTEXTO AUXILIAR DEL DÍA ---
 ${historicalContext}
 
 --- INSTRUCCION ---
-Devuelve maximo ${count} coincidencias para frases/escenas.
+Devuelve máximo ${count} coincidencias para frases/escenas.
 Incluye por cada item: match_explanation, match_mode, confidence_score, ambiguity_note opcional y matched_quote opcional.
-Si no es cita textual exacta, dejalo claro en match_mode y en match_explanation.
+Si no es cita textual exacta, déjalo claro en match_mode y en match_explanation.
 `.trim(),
 };
 

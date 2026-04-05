@@ -1,49 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useContext } from 'react';
+import { GeminiContext } from '../features/ai/GeminiProvider';
 
-const STORAGE_KEY = 'the_living_archive_gemini_key';
-
-/**
- * Custom hook for managing Gemini API credentials.
- * Handles storage in localStorage and provides reactivity for the UI.
- */
 export function useGeminiCredentials() {
-  const [apiKey, setApiKey] = useState<string | null>(() => {
-    return localStorage.getItem(STORAGE_KEY);
-  });
+  const context = useContext(GeminiContext);
 
-  const [isReady, setIsReady] = useState<boolean>(!!apiKey);
+  if (!context) {
+    throw new Error('useGeminiCredentials debe usarse dentro de GeminiProvider.');
+  }
 
-  // Sync state with localStorage changes (e.g., from other tabs)
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) {
-        setApiKey(e.newValue);
-        setIsReady(!!e.newValue);
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  const saveKey = useCallback((key: string) => {
-    const trimmedKey = key.trim();
-    if (trimmedKey) {
-      localStorage.setItem(STORAGE_KEY, trimmedKey);
-      setApiKey(trimmedKey);
-      setIsReady(true);
-    }
-  }, []);
-
-  const clearKey = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    setApiKey(null);
-    setIsReady(false);
-  }, []);
-
-  return {
-    apiKey,
-    isReady,
-    saveKey,
-    clearKey
-  };
+  return context;
 }

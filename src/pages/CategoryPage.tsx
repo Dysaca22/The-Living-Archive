@@ -81,9 +81,9 @@ export function CategoryPage() {
   const handleSaveToArchive = async (movie: Movie) => {
     try {
       await saveMovie(movie);
-      showToast('Titulo guardado en tu boveda.', 'success');
+      showToast('Título guardado en tu bóveda.', 'success');
     } catch (saveError) {
-      const message = saveError instanceof Error ? saveError.message : 'No se pudo guardar el titulo.';
+      const message = saveError instanceof Error ? saveError.message : 'No se pudo guardar el título.';
       showToast(message, 'error');
       throw saveError;
     }
@@ -151,8 +151,8 @@ export function CategoryPage() {
       >
         <div className="rounded-2xl border p-4 mb-6 bg-surface-container-highest/10" style={visualStyle.surfaceBorder}>
           <p className="text-sm text-on-surface-variant">
-            Explorando <span style={visualStyle.accent}>{category.label}</span> con una configuracion tematica dedicada.
-            Puedes abrir cualquier card para revisar el detalle completo y registrar tu avance en la boveda.
+            Explorando <span style={visualStyle.accent}>{category.label}</span> con una configuración temática dedicada.
+            Puedes abrir cualquier card para revisar el detalle completo y registrar tu avance en la bóveda.
           </p>
         </div>
 
@@ -160,7 +160,7 @@ export function CategoryPage() {
           items={items}
           loading={loading}
           error={error}
-          emptyMessage={`No encontramos titulos para ${category.label}. Intenta regenerar esta categoria.`}
+          emptyMessage={`No encontramos títulos para ${category.label}. Intenta regenerar esta categoría.`}
           onInfo={setSelectedMovie}
           onSave={handleSaveToArchive}
           isSaved={isSaved}
@@ -174,7 +174,7 @@ export function CategoryPage() {
         onSave={handleSaveToArchive}
         onDelete={(selected) => {
           deleteMovieByReference(selected);
-          showToast('Titulo eliminado de la boveda.', 'info');
+          showToast('Título eliminado de la bóveda.', 'info');
         }}
         onUpdateStatus={(selected, status) => {
           updateStatusByReference(selected, status);
@@ -182,7 +182,7 @@ export function CategoryPage() {
         }}
         onUpdateRating={(selected, rating) => {
           updateRatingByReference(selected, rating);
-          showToast(`Calificacion personal: ${rating}/5.`, 'info');
+          showToast(`Calificación personal: ${rating}/5.`, 'info');
         }}
         onUpdateNotes={(selected, notes) => {
           updateNotesByReference(selected, notes);

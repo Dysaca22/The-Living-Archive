@@ -30,9 +30,9 @@ export function HomePage() {
   const handleSaveToArchive = async (movie: Movie) => {
     try {
       await saveMovie(movie);
-      showToast('Titulo guardado en tu boveda.', 'success');
+      showToast('Título guardado en tu bóveda.', 'success');
     } catch (saveError) {
-      const message = saveError instanceof Error ? saveError.message : 'No se pudo guardar el titulo.';
+      const message = saveError instanceof Error ? saveError.message : 'No se pudo guardar el título.';
       showToast(message, 'error');
       throw saveError;
     }
@@ -45,7 +45,7 @@ export function HomePage() {
       <header className="text-center">
         <h1 className="text-6xl md:text-8xl font-serif mb-6 italic tracking-tighter">Inicio</h1>
         <p className="text-on-surface-variant max-w-3xl mx-auto">
-          Descubre que ver hoy con senales en tiempo real, temporada actual, efemerides del dia y recomendaciones personalizadas a partir de tu boveda local.
+          Descubre qué ver hoy con señales en tiempo real, temporada actual, efemérides del día y recomendaciones personalizadas a partir de tu bóveda local.
         </p>
       </header>
 
@@ -84,7 +84,7 @@ export function HomePage() {
         onSave={handleSaveToArchive}
         onDelete={(selected) => {
           deleteMovieByReference(selected);
-          showToast('Titulo eliminado de la boveda.', 'info');
+          showToast('Título eliminado de la bóveda.', 'info');
         }}
         onUpdateStatus={(selected, status) => {
           updateStatusByReference(selected, status);
@@ -92,7 +92,7 @@ export function HomePage() {
         }}
         onUpdateRating={(selected, rating) => {
           updateRatingByReference(selected, rating);
-          showToast(`Calificacion personal: ${rating}/5.`, 'info');
+          showToast(`Calificación personal: ${rating}/5.`, 'info');
         }}
         onUpdateNotes={(selected, notes) => {
           updateNotesByReference(selected, notes);

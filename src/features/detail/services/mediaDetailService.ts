@@ -152,7 +152,7 @@ function toReview(review: TmdbReviewItem): PublicReview | null {
 
   return {
     id,
-    author: review.author || 'Anonimo',
+    author: review.author || 'Anónimo',
     content,
     createdAt: review.created_at || '',
     authorRating:
@@ -191,7 +191,7 @@ function toCollectionMovie(part: TmdbCollectionItem): Movie | null {
     releaseYear: parseYear(part.release_date, new Date().getFullYear()),
     mediaType: 'movie',
     tmdbId: part.id,
-    narrativeJustification: normalizeOverview(part.overview, 'Parte de la misma saga o coleccion.'),
+    narrativeJustification: normalizeOverview(part.overview, 'Parte de la misma saga o colección.'),
     posterUrl: buildImageUrl(part.poster_path),
     backdropUrl: buildImageUrl(part.backdrop_path),
   };
@@ -262,7 +262,7 @@ export async function fetchMediaDetail(movie: Movie): Promise<MediaDetail | null
           };
         }
       } catch (error) {
-        console.error('No se pudo cargar la coleccion relacionada:', error);
+        console.error('No se pudo cargar la colección relacionada:', error);
       }
     }
 

@@ -25,7 +25,7 @@ export function HomeSectionGrid({
 }: HomeSectionGridProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4" role="status" aria-label="Cargando titulos">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4" role="status" aria-label="Cargando títulos">
         {Array.from({ length: 6 }).map((_, index) => (
           <div
             key={index}

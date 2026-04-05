@@ -6,8 +6,8 @@ import { useGeminiCredentials } from '../hooks/useGeminiCredentials';
 const NAV_ITEMS = [
   { to: '/', label: 'Inicio', end: true },
   { to: '/buscar', label: 'Buscar' },
-  { to: '/paises', label: 'Paises' },
-  { to: '/vault', label: 'Boveda' },
+  { to: '/paises', label: 'Países' },
+  { to: '/vault', label: 'Bóveda' },
 ];
 
 export function AppLayout() {
@@ -70,8 +70,8 @@ export function AppLayout() {
         <button
           onClick={clearKey}
           className="hover:text-primary transition-colors text-on-surface-variant focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded p-1"
-          aria-label="Cerrar sesion y limpiar clave API"
-          title="Cerrar sesion y limpiar clave API"
+          aria-label="Cerrar sesión y limpiar clave API"
+          title="Cerrar sesión y limpiar clave API"
         >
           <LogOut className="w-4 h-4 md:w-5 md:h-5" />
         </button>

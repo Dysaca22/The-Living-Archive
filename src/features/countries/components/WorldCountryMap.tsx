@@ -35,11 +35,11 @@ export function WorldCountryMap({ selectedCountryMapId, onSelectCountry }: World
         <div>
           <h2 className="text-3xl font-serif italic">Mapa del mundo</h2>
           <p className="text-xs text-on-surface-variant font-mono uppercase tracking-widest mt-2">
-            Haz clic o presiona Enter en un pais para activar el descubrimiento
+            Haz clic o presiona Enter en un país para activar el descubrimiento
           </p>
         </div>
         <div className="text-right">
-          <p className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant">Pais visible</p>
+          <p className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant">País visible</p>
           <p className="text-sm">{hoveredLabel ?? selectedLabel ?? 'Ninguno'}</p>
         </div>
       </div>
@@ -86,7 +86,7 @@ export function WorldCountryMap({ selectedCountryMapId, onSelectCountry }: World
       </div>
 
       <p className="mt-4 text-xs text-on-surface-variant">
-        Cobertura: {COUNTRY_CATALOG.length} paises disponibles en mapa.
+        Cobertura: {COUNTRY_CATALOG.length} países disponibles en mapa.
       </p>
     </section>
   );

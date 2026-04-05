@@ -6,7 +6,7 @@ import { VaultMovieRecord } from '../types/movie';
  */
 export class PlatformStateManager {
   /**
-   * Retorna inventario normalizado de titulos para filtrado en prompts.
+   * Retorna inventario normalizado de títulos para filtrado en prompts.
    */
   public static async evaluateCurrentState(): Promise<string[]> {
     try {
@@ -14,7 +14,7 @@ export class PlatformStateManager {
       return movies.map((movie) => movie.title.toLowerCase().trim());
     } catch (error) {
       console.error('Error evaluando estado local:', error);
-      throw new Error('No fue posible leer la boveda local.');
+      throw new Error('No fue posible leer la bóveda local.');
     }
   }
 
@@ -31,10 +31,14 @@ export class PlatformStateManager {
     } catch (error) {
       console.error('Error sincronizando cache local:', error);
       const message = error instanceof Error ? error.message : '';
-      if (message.includes('boveda local esta llena') || message.includes('vault is full')) {
+      if (
+        message.includes('bóveda local está llena') ||
+        message.includes('boveda local esta llena') ||
+        message.includes('vault is full')
+      ) {
         throw error;
       }
-      throw new Error('Error al guardar: la boveda local no esta disponible.');
+      throw new Error('Error al guardar: la bóveda local no está disponible.');
     }
   }
 }

@@ -1,12 +1,12 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type } from '@google/genai';
 import {
   MovieRecommendation,
   QuoteSceneRecommendation,
   movieRecommendationSchema,
   quoteSceneRecommendationSchema,
-} from "../schemas/movieSchema";
-import { AI_CONFIG } from "../constants/aiConfig";
-import { SearchFlowMode, getSearchPromptDefinition } from "../prompts/searchPromptLayer";
+} from '../schemas/movieSchema';
+import { AI_CONFIG } from '../constants/aiConfig';
+import { SearchFlowMode, getSearchPromptDefinition } from '../prompts/searchPromptLayer';
 
 interface SearchGenerationOptions {
   count?: number;
@@ -21,11 +21,83 @@ interface GenerationRequest {
   count: number;
 }
 
+export type GeminiFlowErrorCode =
+  | 'model_unavailable'
+  | 'unauthorized'
+  | 'rate_limited'
+  | 'invalid_json'
+  | 'network'
+  | 'empty_response'
+  | 'unknown';
+
+export class GeminiFlowError extends Error {
+  public readonly code: GeminiFlowErrorCode;
+
+  constructor(message: string, code: GeminiFlowErrorCode) {
+    super(message);
+    this.name = 'GeminiFlowError';
+    this.code = code;
+  }
+}
+
+function normalizeGeminiError(error: unknown): GeminiFlowError {
+  const candidate = error as { status?: number; message?: string; name?: string };
+  const status = candidate.status;
+  const messageText = candidate.message ?? '';
+
+  if (status === 404 || messageText.includes('404')) {
+    return new GeminiFlowError(`El modelo "${AI_CONFIG.MODEL_NAME}" no está disponible.`, 'model_unavailable');
+  }
+  if (
+    status === 401 ||
+    status === 403 ||
+    messageText.includes('401') ||
+    messageText.includes('403')
+  ) {
+    return new GeminiFlowError('La API key de Gemini no es válida o no tiene permisos.', 'unauthorized');
+  }
+  if (status === 429 || messageText.includes('429')) {
+    return new GeminiFlowError('Gemini está saturado temporalmente. Intenta de nuevo.', 'rate_limited');
+  }
+  if (error instanceof SyntaxError) {
+    return new GeminiFlowError('Gemini devolvió JSON inválido para este flujo.', 'invalid_json');
+  }
+  if (candidate.name === 'AbortError' || messageText.includes('fetch')) {
+    return new GeminiFlowError('No se pudo conectar con Gemini.', 'network');
+  }
+  if (error instanceof GeminiFlowError) {
+    return error;
+  }
+
+  const message = error instanceof Error ? error.message : 'Error desconocido en Gemini.';
+  return new GeminiFlowError(message, 'unknown');
+}
+
 /**
  * Gemini Service for The Living Archive.
  * Provides structured generation for general discovery and quote/scene matching.
  */
 export class GeminiService {
+  public static async validateApiKey(apiKey: string): Promise<void> {
+    try {
+      const ai = new GoogleGenAI({ apiKey });
+      const response = await ai.models.generateContent({
+        model: AI_CONFIG.MODEL_NAME,
+        contents: [{ role: 'user', parts: [{ text: 'Responde con la palabra OK.' }] }],
+        config: {
+          temperature: 0,
+        },
+      });
+
+      const text = response.text?.trim();
+      if (!text) {
+        throw new GeminiFlowError('Gemini devolvió una respuesta vacía durante la validación.', 'empty_response');
+      }
+    } catch (error: unknown) {
+      throw normalizeGeminiError(error);
+    }
+  }
+
   public static async generateRecommendations(
     apiKey: string,
     userPrompt: string,
@@ -36,7 +108,7 @@ export class GeminiService {
     const count = options.count ?? AI_CONFIG.DEFAULT_GENERAL_COUNT;
     const result = await this.generateStructured({
       apiKey,
-      mode: "general",
+      mode: 'general',
       userPrompt,
       historicalContext,
       existingTitles,
@@ -57,7 +129,7 @@ export class GeminiService {
     const count = options.count ?? AI_CONFIG.DEFAULT_QUOTE_SCENE_COUNT;
     const result = await this.generateStructured({
       apiKey,
-      mode: "quote_scene",
+      mode: 'quote_scene',
       userPrompt,
       historicalContext,
       existingTitles,
@@ -77,7 +149,7 @@ export class GeminiService {
         model: AI_CONFIG.MODEL_NAME,
         contents: [
           {
-            role: "user",
+            role: 'user',
             parts: [
               {
                 text: promptDefinition.formatUserPrompt({
@@ -93,80 +165,51 @@ export class GeminiService {
         config: {
           systemInstruction: promptDefinition.systemInstruction,
           temperature: AI_CONFIG.TEMPERATURE,
-          responseMimeType: "application/json",
+          responseMimeType: 'application/json',
           responseSchema: getResponseSchema(request.mode),
         },
       });
 
       const text = response.text;
-      if (!text || text.trim() === "") {
-        throw new Error("Gemini devolvio una respuesta vacia.");
+      if (!text || text.trim() === '') {
+        throw new GeminiFlowError('Gemini devolvió una respuesta vacía.', 'empty_response');
       }
 
-      const cleanText = text.replace(/```json\n?|\n?```/g, "").trim();
+      const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
       return JSON.parse(cleanText);
     } catch (error: unknown) {
-      console.error("Gemini flow error:", error);
-
-      const candidate = error as { status?: number; message?: string; name?: string };
-      const status = candidate.status;
-      const messageText = candidate.message ?? '';
-
-      if (status === 404 || messageText.includes("404")) {
-        throw new Error(`El modelo "${AI_CONFIG.MODEL_NAME}" no esta disponible.`);
-      }
-      if (
-        status === 401 ||
-        status === 403 ||
-        messageText.includes("401") ||
-        messageText.includes("403")
-      ) {
-        throw new Error("La API key de Gemini no es valida o no tiene permisos.");
-      }
-      if (status === 429 || messageText.includes("429")) {
-        throw new Error("Gemini esta saturado temporalmente. Intenta de nuevo.");
-      }
-      if (error instanceof SyntaxError) {
-        throw new Error("Gemini devolvio JSON invalido para este flujo.");
-      }
-      if (candidate.name === "AbortError" || messageText.includes("fetch")) {
-        throw new Error("No se pudo conectar con Gemini.");
-      }
-
-      const message = error instanceof Error ? error.message : "Error desconocido en Gemini.";
-      throw new Error(message);
+      const normalized = normalizeGeminiError(error);
+      console.error('Gemini flow error:', {
+        code: normalized.code,
+        message: normalized.message,
+      });
+      throw normalized;
     }
   }
 }
 
 function getResponseSchema(mode: SearchFlowMode) {
-  if (mode === "quote_scene") {
+  if (mode === 'quote_scene') {
     return {
       type: Type.ARRAY,
       items: {
         type: Type.OBJECT,
         properties: {
-          title: { type: Type.STRING, description: "Official title." },
-          release_year: { type: Type.NUMBER, description: "Release year." },
-          media_type: { type: Type.STRING, description: "movie or tv." },
-          tmdb_database_id: { type: Type.NUMBER, description: "TMDB id when known." },
-          soundtrack_highlight: { type: Type.STRING, description: "Optional soundtrack highlight." },
-          match_explanation: { type: Type.STRING, description: "Why this result matches the phrase/scene." },
+          title: { type: Type.STRING, description: 'Official title.' },
+          release_year: { type: Type.NUMBER, description: 'Release year.' },
+          media_type: { type: Type.STRING, description: 'movie or tv.' },
+          tmdb_database_id: { type: Type.NUMBER, description: 'TMDB id when known.' },
+          soundtrack_highlight: { type: Type.STRING, description: 'Optional soundtrack highlight.' },
+          match_explanation: { type: Type.STRING, description: 'Why this result matches the phrase/scene.' },
           match_mode: {
             type: Type.STRING,
-            description: "quote_exact | scene_description | theme_similarity",
+            description: 'quote_exact | scene_description | theme_similarity',
           },
-          confidence_score: { type: Type.NUMBER, description: "Confidence score from 0 to 1." },
-          ambiguity_note: { type: Type.STRING, description: "Optional ambiguity explanation." },
-          matched_quote: { type: Type.STRING, description: "Optional exact quote fragment." },
+          confidence_score: { type: Type.NUMBER, description: 'Confidence score from 0 to 1.' },
+          ambiguity_note: { type: Type.STRING, description: 'Optional ambiguity explanation.' },
+          matched_quote: { type: Type.STRING, description: 'Optional exact quote fragment.' },
         },
-        required: [
-          "title",
-          "release_year",
-          "match_explanation",
-          "match_mode",
-          "confidence_score",
-        ],
+        required: ['title', 'release_year', 'match_explanation', 'match_mode', 'confidence_score'],
       },
     };
   }
@@ -176,14 +219,14 @@ function getResponseSchema(mode: SearchFlowMode) {
     items: {
       type: Type.OBJECT,
       properties: {
-        title: { type: Type.STRING, description: "The official original title of the film or show." },
-        narrative_justification: { type: Type.STRING, description: "Why this recommendation matches the request." },
-        release_year: { type: Type.NUMBER, description: "Release year." },
-        media_type: { type: Type.STRING, description: "movie or tv." },
-        tmdb_database_id: { type: Type.NUMBER, description: "TMDB id when known." },
-        soundtrack_highlight: { type: Type.STRING, description: "Optional soundtrack highlight." },
+        title: { type: Type.STRING, description: 'The official original title of the film or show.' },
+        narrative_justification: { type: Type.STRING, description: 'Why this recommendation matches the request.' },
+        release_year: { type: Type.NUMBER, description: 'Release year.' },
+        media_type: { type: Type.STRING, description: 'movie or tv.' },
+        tmdb_database_id: { type: Type.NUMBER, description: 'TMDB id when known.' },
+        soundtrack_highlight: { type: Type.STRING, description: 'Optional soundtrack highlight.' },
       },
-      required: ["title", "narrative_justification", "release_year"],
+      required: ['title', 'narrative_justification', 'release_year'],
     },
   };
 }
@@ -193,7 +236,7 @@ function deduplicate<T extends { title: string; release_year: number; media_type
   const output: T[] = [];
 
   for (const item of items) {
-    const key = `${item.title.toLowerCase().trim()}::${item.release_year}::${item.media_type ?? "movie"}`;
+    const key = `${item.title.toLowerCase().trim()}::${item.release_year}::${item.media_type ?? 'movie'}`;
     if (seen.has(key)) {
       continue;
     }

@@ -56,9 +56,9 @@ export function VaultPage() {
       anchor.download = `the-living-archive-vault-${new Date().toISOString().split('T')[0]}.json`;
       anchor.click();
       URL.revokeObjectURL(url);
-      showToast('Boveda exportada correctamente.', 'success');
+      showToast('Bóveda exportada correctamente.', 'success');
     } catch {
-      showToast('No se pudo exportar la boveda.', 'error');
+      showToast('No se pudo exportar la bóveda.', 'error');
     }
   };
 
@@ -73,9 +73,9 @@ export function VaultPage() {
       try {
         const content = loadEvent.target?.result as string;
         const { imported, skipped } = importVault(content);
-        showToast(`Importacion completada: ${imported} agregados, ${skipped} omitidos.`, 'success');
+        showToast(`Importación completada: ${imported} agregados, ${skipped} omitidos.`, 'success');
       } catch (importError) {
-        const message = importError instanceof Error ? importError.message : 'No se pudo importar la boveda.';
+        const message = importError instanceof Error ? importError.message : 'No se pudo importar la bóveda.';
         showToast(message, 'error');
       }
     };
@@ -85,7 +85,7 @@ export function VaultPage() {
 
   const handleDelete = (movie: Movie) => {
     deleteMovie(movie.title, movie.releaseYear, movie.mediaType, movie.tmdbId);
-    showToast('Titulo eliminado de la boveda.', 'info');
+    showToast('Título eliminado de la bóveda.', 'info');
   };
 
   const selectedRecord = getRecord(selectedMovie);
@@ -94,9 +94,9 @@ export function VaultPage() {
     <div className="max-w-7xl mx-auto">
       <header className="mb-16 flex flex-col md:flex-row items-end justify-between gap-8">
         <div className="text-left">
-          <h1 className="text-6xl font-serif mb-4 italic">La Boveda</h1>
+          <h1 className="text-6xl font-serif mb-4 italic">La Bóveda</h1>
           <p className="font-mono text-on-surface-variant uppercase tracking-[0.3em] text-[10px]">
-            {records.length} titulos guardados
+            {records.length} títulos guardados
           </p>
         </div>
 
@@ -106,10 +106,10 @@ export function VaultPage() {
             <Search className="w-4 h-4 text-on-surface-variant" />
             <input
               type="text"
-              placeholder="Filtrar en la boveda..."
+              placeholder="Filtrar en la bóveda..."
               value={archiveSearch}
               onChange={(event) => setArchiveSearch(event.target.value)}
-              aria-label="Filtrar titulos de la boveda"
+              aria-label="Filtrar títulos de la bóveda"
               className="bg-transparent border-none outline-none text-xs w-full"
             />
           </div>
@@ -118,13 +118,13 @@ export function VaultPage() {
             <button
               onClick={handleExportVault}
               className="text-on-surface-variant hover:text-primary transition-colors font-mono text-xs uppercase tracking-widest focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded px-2 py-1"
-              aria-label="Exportar boveda en JSON"
+              aria-label="Exportar bóveda en JSON"
             >
               Exportar
             </button>
             <label
               className="text-on-surface-variant hover:text-primary transition-colors font-mono text-xs uppercase tracking-widest cursor-pointer focus-within:ring-2 focus-within:ring-primary focus-within:outline-none rounded px-2 py-1"
-              aria-label="Importar boveda desde JSON"
+              aria-label="Importar bóveda desde JSON"
             >
               Importar
               <input type="file" accept=".json" onChange={handleImportVault} className="hidden" />
@@ -132,9 +132,9 @@ export function VaultPage() {
             <button
               onClick={() => setShowClearConfirm(true)}
               className="text-on-surface-variant hover:text-red-400 transition-colors font-mono text-xs uppercase tracking-widest whitespace-nowrap focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none rounded px-2 py-1"
-              aria-label="Limpiar toda la boveda"
+              aria-label="Limpiar toda la bóveda"
             >
-              Limpiar boveda
+              Limpiar bóveda
             </button>
           </div>
         </div>
@@ -165,10 +165,10 @@ export function VaultPage() {
             <div className="col-span-full flex flex-col items-center justify-center h-96 glass rounded-3xl border-dashed border-white/10">
               <Archive className="w-12 h-12 text-primary/20 mb-6" />
               <h3 className="text-xl font-serif italic mb-2">
-                {archiveSearch ? 'No hay coincidencias con ese filtro' : 'La boveda esta vacia'}
+                {archiveSearch ? 'No hay coincidencias con ese filtro' : 'La bóveda está vacía'}
               </h3>
               <p className="text-on-surface-variant text-sm font-mono uppercase tracking-widest text-center px-4">
-                {archiveSearch ? 'Prueba otro termino' : 'Descubre titulos y guardalos aqui.'}
+                {archiveSearch ? 'Prueba otro término' : 'Descubre títulos y guárdalos aquí.'}
               </p>
               {!archiveSearch && (
                 <Link
@@ -188,7 +188,7 @@ export function VaultPage() {
         onClose={() => setSelectedMovie(null)}
         onDelete={(selected) => {
           deleteMovieByReference(selected);
-          showToast('Titulo eliminado de la boveda.', 'info');
+          showToast('Título eliminado de la bóveda.', 'info');
         }}
         onUpdateStatus={(selected, status) => {
           updateStatusByReference(selected, status);
@@ -196,7 +196,7 @@ export function VaultPage() {
         }}
         onUpdateRating={(selected, userRating) => {
           updateRatingByReference(selected, userRating);
-          showToast(`Calificacion personal: ${userRating}/5.`, 'info');
+          showToast(`Calificación personal: ${userRating}/5.`, 'info');
         }}
         onUpdateNotes={(selected, userNotes) => {
           updateNotesByReference(selected, userNotes);
@@ -225,10 +225,10 @@ export function VaultPage() {
             >
               <div className="flex items-center gap-4 mb-6 text-red-400">
                 <AlertCircle className="w-8 h-8" />
-                <h3 className="text-2xl font-serif italic">Limpiar boveda?</h3>
+                <h3 className="text-2xl font-serif italic">¿Limpiar bóveda?</h3>
               </div>
               <p className="text-on-surface-variant mb-8 leading-relaxed">
-                Esta accion elimina todos tus titulos guardados y no se puede deshacer.
+                Esta acción elimina todos tus títulos guardados y no se puede deshacer.
               </p>
               <div className="flex gap-4">
                 <button
@@ -241,7 +241,7 @@ export function VaultPage() {
                   onClick={() => {
                     clearVault();
                     setShowClearConfirm(false);
-                    showToast('Boveda limpiada correctamente.', 'success');
+                    showToast('Bóveda limpiada correctamente.', 'success');
                   }}
                   className="flex-1 py-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 transition-colors font-mono text-xs uppercase tracking-widest text-red-400 focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none"
                 >

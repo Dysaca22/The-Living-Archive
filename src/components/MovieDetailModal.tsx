@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useMemo, useState } from 'react';
+﻿import React, { useEffect, useId, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   Calendar,
@@ -228,7 +228,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
             <div className="absolute left-6 right-6 bottom-5">
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <span className="px-3 py-1 rounded-full bg-primary/20 text-primary font-mono text-[10px] uppercase tracking-widest">
-                  {activeMovie.mediaType === 'tv' ? 'Serie' : 'Pelicula'}
+                  {activeMovie.mediaType === 'tv' ? 'Serie' : 'Película'}
                 </span>
                 {tmdbLink && (
                   <a
@@ -275,12 +275,13 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
 
               <section className="space-y-4">
                 <h3 className="font-mono text-[10px] uppercase tracking-[0.25em] text-primary">
-                  Recepcion publica
+                  Recepción pública
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="rounded-2xl border border-white/10 bg-surface-container-highest/10 p-4">
                     <p className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant mb-2">
                       Rating del publico
+                      Rating del público
                     </p>
                     <p className="text-2xl font-serif italic">
                       {typeof publicRating === 'number' ? publicRating.toFixed(1) : 'Sin dato'}
@@ -305,7 +306,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
                 {!loading && !error && (
                   <div className="space-y-3">
                     <p className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant">
-                      Comentarios publicos
+                      Comentarios públicos
                     </p>
                     {detail?.publicReviews && detail.publicReviews.length > 0 ? (
                       <div className="space-y-3">
@@ -345,7 +346,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
                       </div>
                     ) : (
                       <div className="rounded-2xl border border-white/10 bg-surface-container-highest/10 p-4 text-sm text-on-surface-variant">
-                        No hay comentarios publicos disponibles para este titulo en este momento.
+                        No hay comentarios públicos disponibles para este título en este momento.
                       </div>
                     )}
                   </div>
@@ -402,10 +403,10 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
               {hasCollection && detail?.collection && (
                 <section className="space-y-4">
                   <h3 className="font-mono text-[10px] uppercase tracking-[0.25em] text-primary">
-                    Saga / Coleccion
+                    Saga / Colección
                   </h3>
                   <p className="text-sm text-on-surface-variant">
-                    {detail.collection.name}. Tambien te puede interesar:
+                    {detail.collection.name}. También te puede interesar:
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {detail.collection.items.map((relatedMovie) => (
@@ -447,6 +448,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
                 <section className="rounded-2xl border border-white/10 bg-surface-container-highest/10 p-4">
                   <p className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant mb-2">
                     Efemeride asociada
+                    Efeméride asociada
                   </p>
                   <p className="text-sm text-on-surface-variant leading-relaxed">{historicalContext}</p>
                 </section>
@@ -458,18 +460,18 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
                 <h3 className="font-mono text-[10px] uppercase tracking-[0.25em] text-primary">Tu registro</h3>
                 {isSaved ? (
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/15 text-primary text-xs font-mono uppercase tracking-widest">
-                    Guardado en boveda
+                    Guardado en bóveda
                   </div>
                 ) : (
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-highest/20 text-on-surface-variant text-xs font-mono uppercase tracking-widest">
-                    Aun no guardado
+                    Aún no guardado
                   </div>
                 )}
               </section>
 
               <section className="space-y-3">
                 <p className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant">
-                  Calificacion personal
+                  Calificación personal
                 </p>
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((starValue) => (
@@ -492,7 +494,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
 
               <section className="space-y-3">
                 <p className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant">
-                  Estado de visualizacion
+                  Estado de visualización
                 </p>
                 <div className="grid grid-cols-1 gap-2">
                   {statusOptions.map((statusOption) => (
@@ -521,7 +523,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
                   value={localNotes}
                   onChange={(event) => setLocalNotes(event.target.value)}
                   onBlur={() => onUpdateNotes?.(activeMovie, localNotes)}
-                  placeholder="Que te dejo este titulo?"
+                  placeholder="¿Qué te dejó este título?"
                   className="w-full min-h-[120px] resize-none rounded-xl border border-white/10 bg-surface-container-highest/20 p-3 text-sm focus:outline-none focus:border-primary/30"
                 />
               </section>
@@ -533,7 +535,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
                     className="w-full rounded-xl px-4 py-3 inline-flex items-center justify-center gap-2 bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary font-mono text-xs uppercase tracking-widest transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                   >
                     <Save className="w-4 h-4" />
-                    Guardar en boveda
+                    Guardar en bóveda
                   </button>
                 ) : (
                   <button
@@ -541,7 +543,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
                     className="w-full rounded-xl px-4 py-3 inline-flex items-center justify-center gap-2 bg-transparent hover:bg-red-500/10 border border-red-500/20 text-red-300 font-mono text-xs uppercase tracking-widest transition-colors focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none"
                   >
                     <Trash2 className="w-4 h-4" />
-                    Eliminar de boveda
+                    Eliminar de bóveda
                   </button>
                 )}
               </section>
@@ -559,7 +561,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
                   ) : (
                     <>
                       <Film className="w-4 h-4 text-primary" />
-                      Pelicula
+                      Película
                     </>
                   )}
                 </p>
@@ -571,3 +573,4 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
     </AnimatePresence>
   );
 };
+

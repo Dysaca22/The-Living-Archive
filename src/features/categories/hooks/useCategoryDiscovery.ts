@@ -47,7 +47,7 @@ export function useCategoryDiscovery(category: CategoryDefinition | undefined) {
         error:
           requestError instanceof Error
             ? requestError.message
-            : 'No fue posible cargar la categoria.',
+            : 'No fue posible cargar la categoría.',
         strategyLabel: category.discovery.rationale,
       });
     }

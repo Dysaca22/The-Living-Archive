@@ -40,9 +40,9 @@ export function CountriesPage() {
   const handleSaveToArchive = async (movie: Movie) => {
     try {
       await saveMovie(movie);
-      showToast('Titulo guardado en tu boveda.', 'success');
+      showToast('Título guardado en tu bóveda.', 'success');
     } catch (saveError) {
-      const message = saveError instanceof Error ? saveError.message : 'No se pudo guardar el titulo.';
+      const message = saveError instanceof Error ? saveError.message : 'No se pudo guardar el título.';
       showToast(message, 'error');
       throw saveError;
     }
@@ -57,15 +57,15 @@ export function CountriesPage() {
             Descubrimiento global
           </span>
         </div>
-        <h1 className="text-5xl md:text-6xl font-serif italic tracking-tight">Explora por pais</h1>
+        <h1 className="text-5xl md:text-6xl font-serif italic tracking-tight">Explora por país</h1>
         <p className="max-w-3xl text-on-surface-variant">
-          El mapa te permite descubrir peliculas y series segun su pais de origen. Selecciona un pais y abre cualquier card para ver su detalle.
+          El mapa te permite descubrir películas y series según su país de origen. Selecciona un país y abre cualquier card para ver su detalle.
         </p>
       </header>
 
       <section className="flex flex-wrap items-center gap-3">
         <span className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant">
-          Pais seleccionado
+          País seleccionado
         </span>
         <span className="px-3 py-1 rounded-full border border-primary/40 bg-primary/10 text-sm">
           {selectedCountry?.label ?? 'Ninguno'}
@@ -75,7 +75,7 @@ export function CountriesPage() {
             onClick={() => setSelectedCountryMapId(null)}
             className="px-3 py-2 rounded-full border border-white/15 text-xs hover:border-primary/40 hover:bg-primary/10 transition-colors"
           >
-            Limpiar seleccion
+            Limpiar selección
           </button>
         )}
       </section>
@@ -110,7 +110,7 @@ export function CountriesPage() {
         onSave={handleSaveToArchive}
         onDelete={(selected) => {
           deleteMovieByReference(selected);
-          showToast('Titulo eliminado de la boveda.', 'info');
+          showToast('Título eliminado de la bóveda.', 'info');
         }}
         onUpdateStatus={(selected, status) => {
           updateStatusByReference(selected, status);
@@ -118,7 +118,7 @@ export function CountriesPage() {
         }}
         onUpdateRating={(selected, rating) => {
           updateRatingByReference(selected, rating);
-          showToast(`Calificacion personal: ${rating}/5.`, 'info');
+          showToast(`Calificación personal: ${rating}/5.`, 'info');
         }}
         onUpdateNotes={(selected, notes) => {
           updateNotesByReference(selected, notes);

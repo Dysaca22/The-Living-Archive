@@ -38,14 +38,14 @@ export function CountryResultsPanel({
   if (!selectedCountry) {
     return (
       <aside className="glass rounded-3xl border border-white/5 p-6">
-        <h2 className="text-2xl font-serif italic mb-3">Descubrimiento por pais</h2>
+        <h2 className="text-2xl font-serif italic mb-3">Descubrimiento por país</h2>
         <p className="text-sm text-on-surface-variant mb-6">
-          Selecciona un pais en el mapa o usa un acceso rapido para cargar recomendaciones.
+          Selecciona un país en el mapa o usa un acceso rápido para cargar recomendaciones.
         </p>
 
         <div className="space-y-3">
           <p className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant">
-            Accesos rapidos
+            Accesos rápidos
           </p>
           <div className="flex flex-wrap gap-2">
             {FEATURED_COUNTRIES.map((country) => (
@@ -67,19 +67,19 @@ export function CountryResultsPanel({
     <aside className="glass rounded-3xl border border-white/5 p-6 lg:max-h-[860px] lg:overflow-y-auto">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant">Pais seleccionado</p>
+          <p className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant">País seleccionado</p>
           <h2 className="text-2xl font-serif italic">{selectedCountry.label}</h2>
         </div>
         <button
           onClick={onClearSelection}
           className="px-3 py-2 rounded-full border border-white/15 text-xs hover:border-primary/40 hover:bg-primary/10 transition-colors"
         >
-          Limpiar seleccion
+          Limpiar selección
         </button>
       </div>
 
       {loading && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-4" role="status" aria-label="Cargando recomendaciones por pais">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-4" role="status" aria-label="Cargando recomendaciones por país">
           {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={index}
@@ -106,7 +106,7 @@ export function CountryResultsPanel({
         <div className="h-56 rounded-2xl border border-white/10 bg-surface-container-highest/10 flex flex-col items-center justify-center text-center px-5 gap-3" role="status">
           <Sparkles className="w-8 h-8 text-primary/40" />
           <p className="text-sm text-on-surface-variant">
-            No encontramos resultados fuertes para {selectedCountry.label}. Prueba otro pais.
+            No encontramos resultados fuertes para {selectedCountry.label}. Prueba otro país.
           </p>
         </div>
       )}
@@ -114,7 +114,7 @@ export function CountryResultsPanel({
       {!loading && !error && items.length > 0 && (
         <div className="space-y-4">
           <p className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant">
-            Fuente: {source === 'text_fallback' ? 'fallback por texto' : 'origen de produccion (TMDB)'}
+            Fuente: {source === 'text_fallback' ? 'fallback por texto' : 'origen de producción (TMDB)'}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-4">
             {items.map((movie) => (

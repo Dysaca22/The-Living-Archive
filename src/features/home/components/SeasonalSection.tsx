@@ -5,19 +5,19 @@ import { HomeSectionGrid } from './HomeSectionGrid';
 import { HomeSectionCardHandlers } from './sectionTypes';
 
 export function SeasonalSection(handlers: HomeSectionCardHandlers) {
-  const { title, subtitle, items, loading, error, reload } = useSeasonalSection();
+  const { title, subtitle, items, loading, error, regenerate } = useSeasonalSection();
 
   return (
     <HomeSectionFrame
-      title="Filmes de esta epoca del ano"
-      subtitle={`${title}. ${subtitle}`}
+      title={title}
+      subtitle={subtitle}
       actions={
         <button
-          onClick={() => void reload()}
+          onClick={() => void regenerate()}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:border-primary/40 transition-colors font-mono text-[10px] uppercase tracking-widest"
         >
           <RefreshCw className="w-3 h-3" />
-          Regenerar
+          Regenerar selección
         </button>
       }
     >
@@ -25,7 +25,7 @@ export function SeasonalSection(handlers: HomeSectionCardHandlers) {
         items={items}
         loading={loading}
         error={error}
-        emptyMessage="No se encontraron resultados estacionales para este mes."
+        emptyMessage="No encontramos suficientes títulos para esta época. Usa Regenerar para obtener una nueva curaduría del mismo periodo."
         onInfo={handlers.onInfo}
         onSave={handlers.onSave}
         isSaved={handlers.isSaved}

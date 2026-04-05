@@ -16,11 +16,11 @@ type SearchMode = 'quote_scene' | 'general';
 
 const EXAMPLE_QUERIES = [
   'frase sobre no poder rechazar una oferta',
-  'escena de baile en escaleras con musica disco',
-  'monologo sobre lluvia y lagrimas',
-  'escena de persecucion en tren con tension',
+  'escena de baile en escaleras con música disco',
+  'monólogo sobre lluvia y lágrimas',
+  'escena de persecución en tren con tensión',
   'frase de despedida en aeropuerto',
-  'descripcion de escena en un motel y suspense',
+  'descripción de escena en un motel y suspense',
 ];
 
 function getModeFromParams(value: string | null): SearchMode {
@@ -38,14 +38,14 @@ function getMatchModeLabel(mode: 'quote_exact' | 'scene_description' | 'theme_si
     case 'quote_exact':
       return 'cita exacta';
     case 'scene_description':
-      return 'descripcion de escena';
+      return 'descripción de escena';
     default:
-      return 'similitud tematica';
+      return 'similitud temática';
   }
 }
 
 export function SearchPage() {
-  const { apiKey, isReady, saveKey } = useGeminiCredentials();
+  const { isReady, saveKey } = useGeminiCredentials();
   const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState<SearchMode>(() => getModeFromParams(searchParams.get('modo')));
   const [inputKey, setInputKey] = useState('');
@@ -55,11 +55,11 @@ export function SearchPage() {
   const [quoteCount, setQuoteCount] = useState(AI_CONFIG.DEFAULT_QUOTE_SCENE_COUNT);
   const lastAutoQueryRef = useRef<string | null>(null);
 
-  const generalSearch = useDiscovery(apiKey, isReady, {
+  const generalSearch = useDiscovery({
     count: generalCount,
     enabled: mode === 'general',
   });
-  const quoteSceneSearch = useQuoteSceneSearch(apiKey, isReady, {
+  const quoteSceneSearch = useQuoteSceneSearch({
     count: quoteCount,
     enabled: mode === 'quote_scene',
   });
@@ -97,18 +97,17 @@ export function SearchPage() {
 
     if (mode === 'quote_scene') {
       quoteSceneSearch.setQuery(queryFromUrl);
-      if (isReady && apiKey) {
+      if (isReady) {
         void quoteSceneSearch.search(queryFromUrl);
       }
       return;
     }
 
     generalSearch.setSearchQuery(queryFromUrl);
-    if (isReady && apiKey) {
+    if (isReady) {
       void generalSearch.performSearch(queryFromUrl);
     }
   }, [
-    apiKey,
     isReady,
     mode,
     searchParams,
@@ -136,11 +135,13 @@ export function SearchPage() {
 
     if (mode === 'quote_scene') {
       await quoteSceneSearch.search(quoteSceneSearch.query);
+      lastAutoQueryRef.current = `${mode}:${quoteSceneSearch.query.trim()}`;
       updateRouteState(mode, quoteSceneSearch.query);
       return;
     }
 
     await generalSearch.performSearch(generalSearch.searchQuery);
+    lastAutoQueryRef.current = `${mode}:${generalSearch.searchQuery.trim()}`;
     updateRouteState(mode, generalSearch.searchQuery);
   };
 
@@ -159,6 +160,7 @@ export function SearchPage() {
   const handleQuickExample = async (example: string) => {
     setMode('quote_scene');
     quoteSceneSearch.setQuery(example);
+    lastAutoQueryRef.current = `quote_scene:${example.trim()}`;
     updateRouteState('quote_scene', example);
     await quoteSceneSearch.search(example);
   };
@@ -170,23 +172,25 @@ export function SearchPage() {
     const contextTerms = context.split(' ').slice(0, 6).join(' ');
     if (mode === 'quote_scene') {
       quoteSceneSearch.setQuery(contextTerms);
+      lastAutoQueryRef.current = `quote_scene:${contextTerms.trim()}`;
       updateRouteState('quote_scene', contextTerms);
       await quoteSceneSearch.search(contextTerms);
     } else {
       generalSearch.setSearchQuery(contextTerms);
+      lastAutoQueryRef.current = `general:${contextTerms.trim()}`;
       updateRouteState('general', contextTerms);
       await generalSearch.performSearch(contextTerms);
     }
 
-    showToast('Contexto diario aplicado a la busqueda.', 'info');
+    showToast('Contexto diario aplicado a la búsqueda.', 'info');
   };
 
   const handleSaveToArchive = async (movie: Movie) => {
     try {
       await saveMovie(movie);
-      showToast('Titulo guardado en la boveda.', 'success');
+      showToast('Título guardado en la bóveda.', 'success');
     } catch (saveError) {
-      const message = saveError instanceof Error ? saveError.message : 'No se pudo guardar el titulo.';
+      const message = saveError instanceof Error ? saveError.message : 'No se pudo guardar el título.';
       showToast(message, 'error');
       throw saveError;
     }
@@ -194,7 +198,7 @@ export function SearchPage() {
 
   const handleDeleteFromArchive = (movie: Movie) => {
     deleteMovieByReference(movie);
-    showToast('Titulo eliminado de la boveda.', 'info');
+    showToast('Título eliminado de la bóveda.', 'info');
   };
 
   const handleUpdateStatus = (movie: Movie, status: 'no_visto' | 'en_proceso' | 'visto') => {
@@ -204,7 +208,7 @@ export function SearchPage() {
 
   const handleUpdateRating = (movie: Movie, rating: number) => {
     updateRatingByReference(movie, rating);
-    showToast(`Calificacion personal: ${rating}/5.`, 'info');
+    showToast(`Calificación personal: ${rating}/5.`, 'info');
   };
 
   const handleUpdateNotes = (movie: Movie, notes: string) => {
@@ -241,9 +245,9 @@ export function SearchPage() {
             <Key className="text-primary w-8 h-8" />
           </div>
           <div>
-            <h2 className="text-2xl font-serif mb-2">Conexion requerida</h2>
+            <h2 className="text-2xl font-serif mb-2">Conexión requerida</h2>
             <p className="text-on-surface-variant text-sm leading-relaxed">
-              Para usar busqueda con IA, configura tu clave API de Gemini.
+              Para usar búsqueda con IA, configura tu clave API de Gemini.
             </p>
           </div>
           <form onSubmit={handleSaveKey} className="w-full flex flex-col gap-4">
@@ -269,7 +273,7 @@ export function SearchPage() {
   }
 
   const renderQuoteSceneResults = () => {
-    if (quoteSceneSearch.isLoading) {
+    if (quoteSceneSearch.isLoading && quoteSceneSearch.results.length === 0) {
       return (
         <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {Array.from({ length: quoteCount }).map((_, index) => (
@@ -285,8 +289,8 @@ export function SearchPage() {
           <Sparkles className="w-12 h-12 text-primary/10 mb-6" />
           <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-on-surface-variant/40 text-center px-4">
             {quoteSceneSearch.hasSearched
-              ? 'Sin coincidencias claras. Prueba otra frase o agrega mas contexto.'
-              : 'Busca por frase memorable, escena conocida o descripcion parcial.'}
+              ? 'Sin coincidencias claras. Prueba otra frase o agrega más contexto.'
+              : 'Busca por frase memorable, escena conocida o descripción parcial.'}
           </p>
         </div>
       );
@@ -294,16 +298,21 @@ export function SearchPage() {
 
     return (
       <div className="col-span-full">
+        {quoteSceneSearch.isRefining && quoteSceneSearch.results.length > 0 && (
+          <div className="mb-4 glass border border-primary/20 bg-primary/5 rounded-2xl px-4 py-3 text-xs text-primary/90">
+            Mostrando resultados iniciales mientras completamos pósters y metadatos.
+          </div>
+        )}
         {(quoteAllNonExact || quoteLowConfidenceCount > 0) && (
           <div className="mb-6 space-y-3">
             {quoteAllNonExact && (
               <div className="glass border border-blue-400/30 bg-blue-500/5 rounded-2xl px-4 py-3 text-sm text-blue-200">
-                La consulta parece descripcion de escena y no cita textual exacta. Las coincidencias reflejan interpretacion de contexto.
+                La consulta parece descripción de escena y no cita textual exacta. Las coincidencias reflejan interpretación de contexto.
               </div>
             )}
             {quoteLowConfidenceCount > 0 && (
               <div className="glass border border-amber-400/30 bg-amber-500/5 rounded-2xl px-4 py-3 text-sm text-amber-200">
-                Hay {quoteLowConfidenceCount} resultado(s) con confianza baja. Revisa ambiguedades antes de tomarlo como match definitivo.
+                Hay {quoteLowConfidenceCount} resultado(s) con confianza baja. Revisa ambigüedades antes de tomarlo como match definitivo.
               </div>
             )}
           </div>
@@ -337,7 +346,7 @@ export function SearchPage() {
                   </p>
                 )}
                 {result.ambiguityNote && (
-                  <p className="text-xs text-amber-300">Ambiguedad: {result.ambiguityNote}</p>
+                  <p className="text-xs text-amber-300">Ambigüedad: {result.ambiguityNote}</p>
                 )}
               </div>
             </motion.div>
@@ -348,7 +357,7 @@ export function SearchPage() {
   };
 
   const renderGeneralResults = () => {
-    if (generalSearch.isLoading) {
+    if (generalSearch.isLoading && generalSearch.recommendations.length === 0) {
       return (
         <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {Array.from({ length: generalCount }).map((_, index) => (
@@ -373,6 +382,11 @@ export function SearchPage() {
 
     return (
       <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {generalSearch.isRefining && generalSearch.recommendations.length > 0 && (
+          <div className="sm:col-span-2 lg:col-span-3 glass border border-primary/20 bg-primary/5 rounded-2xl px-4 py-3 text-xs text-primary/90">
+            Mostrando resultados iniciales mientras enriquecemos pósters y metadatos.
+          </div>
+        )}
         {generalSearch.recommendations.map((movie, index) => (
           <motion.div
             key={`${movie.mediaType}-${movie.tmdbId ?? `${movie.title}-${movie.releaseYear}`}`}
@@ -405,10 +419,10 @@ export function SearchPage() {
           animate={{ y: 0, opacity: 1 }}
           className="text-5xl md:text-7xl font-serif mb-4 italic tracking-tighter"
         >
-          Busqueda de cine y series
+          Búsqueda de cine y series
         </motion.h1>
         <p className="text-on-surface-variant max-w-3xl mx-auto leading-relaxed">
-          Busca por frase memorable, escena conocida o descripcion parcial. Si prefieres, tambien puedes usar descubrimiento general.
+          Busca por frase memorable, escena conocida o descripción parcial. Si prefieres, también puedes usar descubrimiento general.
         </p>
       </header>
 
@@ -460,7 +474,7 @@ export function SearchPage() {
         {mode === 'quote_scene' && (
           <div className="max-w-4xl mx-auto mb-6">
             <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-on-surface-variant mb-3 text-center">
-              Ejemplos rapidos
+              Ejemplos rápidos
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               {EXAMPLE_QUERIES.map((example) => (
@@ -478,13 +492,13 @@ export function SearchPage() {
 
         <div className="max-w-xl mx-auto text-center mb-8">
           <p className="font-mono text-on-surface-variant uppercase tracking-[0.3em] text-[10px] mb-3">
-            Contexto del dia
+            Contexto del día
           </p>
           <button
             onClick={() => void handleContextClick()}
             className="text-sm text-primary/80 italic leading-relaxed hover:text-primary transition-colors"
           >
-            {activeHistoricalContext || 'Cargando efemeride del dia...'}
+            {activeHistoricalContext || 'Cargando efeméride del día...'}
           </button>
         </div>
       </section>
@@ -496,17 +510,20 @@ export function SearchPage() {
             type="text"
             value={activeQuery}
             onChange={(event) => {
+              const nextQuery = event.target.value;
               if (mode === 'quote_scene') {
-                quoteSceneSearch.setQuery(event.target.value);
+                quoteSceneSearch.setQuery(nextQuery);
+                quoteSceneSearch.scheduleSearch(nextQuery);
               } else {
-                generalSearch.setSearchQuery(event.target.value);
+                generalSearch.setSearchQuery(nextQuery);
+                generalSearch.scheduleSearch(nextQuery);
               }
             }}
-            aria-label={mode === 'quote_scene' ? 'Busqueda por frases o escenas' : 'Busqueda de descubrimiento general'}
+            aria-label={mode === 'quote_scene' ? 'Búsqueda por frases o escenas' : 'Búsqueda de descubrimiento general'}
             placeholder={
               mode === 'quote_scene'
-                ? "Ej: 'escena de brindis en barco con final tragico'"
-                : 'Ej: thriller europeo con tension psicologica'
+                ? "Ej: 'escena de brindis en barco con final trágico'"
+                : 'Ej: thriller europeo con tensión psicológica'
             }
             className="flex-1 bg-transparent border-none outline-none text-sm md:text-base placeholder:text-on-surface-variant/40"
           />

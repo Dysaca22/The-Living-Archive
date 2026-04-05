@@ -58,7 +58,7 @@ export function useCountryDiscovery(selectedCountry: CountryConfig | null) {
         error:
           requestError instanceof Error
             ? requestError.message
-            : 'No se pudo cargar descubrimiento por pais.',
+            : 'No se pudo cargar descubrimiento por país.',
         source: null,
       });
     } finally {

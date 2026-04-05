@@ -68,13 +68,13 @@ export class LocalCacheService {
     try {
       const normalized = this.normalizeRecord(movie).record;
       if (!normalized) {
-        throw new Error('Formato invalido del titulo a guardar.');
+        throw new Error('Formato inválido del título a guardar.');
       }
 
       const movies = this.getMovies();
       const isDuplicate = movies.some((existing) => isSameArchiveItem(existing, normalized));
       if (isDuplicate) {
-        throw new Error(`"${movie.title}" ya existe en la boveda.`);
+        throw new Error(`"${movie.title}" ya existe en la bóveda.`);
       }
 
       movies.push(normalized);
@@ -153,7 +153,7 @@ export class LocalCacheService {
     try {
       const data = JSON.parse(jsonString);
       if (!data.movies || !Array.isArray(data.movies)) {
-        throw new Error('Formato de archivo invalido.');
+        throw new Error('Formato de archivo inválido.');
       }
 
       const mergedMovies = [...this.getMovies()];
@@ -164,7 +164,7 @@ export class LocalCacheService {
       for (const candidate of data.movies as RawVaultMovieRecord[]) {
         const normalized = this.normalizeRecord(candidate).record;
         if (!normalized) {
-          throw new Error('Formato invalido en el archivo importado. Faltan campos obligatorios.');
+          throw new Error('Formato inválido en el archivo importado. Faltan campos obligatorios.');
         }
 
         const isDuplicate = mergedMovies.some((existing) => isSameArchiveItem(existing, normalized));
@@ -181,7 +181,7 @@ export class LocalCacheService {
       return { imported, skipped };
     } catch (error) {
       console.error('Failed to import archive:', error);
-      throw new Error('El archivo importado esta danado o es incompatible con la boveda.');
+      throw new Error('El archivo importado está dañado o es incompatible con la bóveda.');
     }
   }
 
@@ -257,7 +257,7 @@ export class LocalCacheService {
   private static handleStorageError(error: unknown): never {
     console.error('Storage Error:', error);
     if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-      throw new Error('La boveda local esta llena. Libera espacio para guardar mas titulos.');
+      throw new Error('La bóveda local está llena. Libera espacio para guardar más títulos.');
     }
     if (error instanceof Error) {
       throw error;

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Discovery Prompt: The core instruction set for the Astral Curator.
  * Separates concerns: System, History, Inventory, and Request.
  */
@@ -14,9 +14,9 @@ export const DISCOVERY_PROMPT = {
   `,
 
   formatUserPrompt: (userPrompt: string, historicalContext: string, existingTitles: string[]) => {
-    const inventory = existingTitles.length > 0 
+    const inventory = existingTitles.length > 0
       ? `Películas ya guardadas en el archivo local (NO RECOMENDAR ESTAS): ${existingTitles.join(', ')}`
-      : "El archivo local está actualmente vacío.";
+      : 'El archivo local está actualmente vacío.';
 
     return `
       --- CONTEXTO HISTÓRICO DEL DÍA ---
@@ -29,8 +29,8 @@ export const DISCOVERY_PROMPT = {
       ${userPrompt}
 
       --- INSTRUCCIÓN FINAL ---
-      Genera una lista curada de exactamente 3 recomendaciones de películas que conecten la solicitud del usuario con el contexto histórico proporcionado. 
+      Genera una lista curada de exactamente 3 recomendaciones de películas que conecten la solicitud del usuario con el contexto histórico proporcionado.
       Es CRÍTICO que intentes proporcionar el ID de TMDB correcto y media_type (movie o tv) para cada resultado.
     `;
-  }
+  },
 };

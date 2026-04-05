@@ -54,7 +54,7 @@ export function useMediaDetail(movie: Movie | null) {
           error:
             requestError instanceof Error
               ? requestError.message
-              : 'No fue posible cargar el detalle del titulo.',
+              : 'No fue posible cargar el detalle del título.',
         });
       });
 
