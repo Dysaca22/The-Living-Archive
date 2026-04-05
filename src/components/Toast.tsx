@@ -33,10 +33,17 @@ export const Toast: React.FC<ToastProps> = ({ message, type, isVisible, onClose 
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 glass rounded-2xl shadow-2xl border border-white/10 min-w-[300px]"
+          role={type === 'error' ? 'alert' : 'status'}
+          aria-live={type === 'error' ? 'assertive' : 'polite'}
         >
           {icons[type]}
           <span className="text-sm font-mono tracking-tight flex-1">{message}</span>
-          <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface transition-colors">
+          <button
+            onClick={onClose}
+            className="text-on-surface-variant hover:text-on-surface transition-colors"
+            aria-label="Cerrar notificacion"
+            title="Cerrar notificacion"
+          >
             <X className="w-4 h-4" />
           </button>
         </motion.div>

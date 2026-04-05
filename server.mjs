@@ -2,10 +2,6 @@ import "dotenv/config";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
@@ -17,14 +13,14 @@ async function startServer() {
     return process.env.TMDB_READ_ACCESS_TOKEN;
   }
 
-  function getTmdbHeaders(token: string) {
+  function getTmdbHeaders(token) {
     return {
       accept: "application/json",
       Authorization: `Bearer ${token}`,
     };
   }
 
-  function validateToken(res: express.Response) {
+  function validateToken(res) {
     const token = getTmdbToken();
     if (!token) {
       res.status(503).json({

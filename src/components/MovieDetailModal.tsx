@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useId, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   Calendar,
@@ -84,6 +84,8 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
 }) => {
   const { detail, loading, error } = useMediaDetail(movie);
   const { applyThemeFromMedia, resetTheme } = useThemeController();
+  const dialogTitleId = useId();
+  const dialogDescriptionId = useId();
 
   const [localNotes, setLocalNotes] = useState(currentNotes || '');
   const [hasImageError, setHasImageError] = useState(false);
@@ -187,6 +189,10 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
           exit={{ opacity: 0, scale: 0.98, y: 24 }}
           className="relative w-full max-w-6xl mx-auto glass rounded-3xl border border-white/10 overflow-hidden"
           onClick={(event) => event.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={dialogTitleId}
+          aria-describedby={dialogDescriptionId}
         >
           <button
             onClick={onClose}
@@ -236,7 +242,9 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
                   </a>
                 )}
               </div>
-              <h2 className="text-3xl sm:text-4xl font-serif italic leading-tight">{activeMovie.title}</h2>
+              <h2 id={dialogTitleId} className="text-3xl sm:text-4xl font-serif italic leading-tight">
+                {activeMovie.title}
+              </h2>
               <p className="mt-2 text-xs sm:text-sm text-on-surface-variant flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-primary" />
                 {activeMovie.releaseYear}
@@ -248,7 +256,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
             <div className="p-6 md:p-8 space-y-8">
               <section className="space-y-3">
                 <h3 className="font-mono text-[10px] uppercase tracking-[0.25em] text-primary">Resumen</h3>
-                <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
+                <p id={dialogDescriptionId} className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
                   {detail?.overview || activeMovie.narrativeJustification}
                 </p>
                 {detail?.genres && detail.genres.length > 0 && (
@@ -328,7 +336,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                               >
-                                Ver review completa
+                                Ver comentario completo
                                 <ExternalLink className="w-3 h-3" />
                               </a>
                             )}
@@ -337,7 +345,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
                       </div>
                     ) : (
                       <div className="rounded-2xl border border-white/10 bg-surface-container-highest/10 p-4 text-sm text-on-surface-variant">
-                        No hay reviews publicas disponibles para este titulo en este momento.
+                        No hay comentarios publicos disponibles para este titulo en este momento.
                       </div>
                     )}
                   </div>

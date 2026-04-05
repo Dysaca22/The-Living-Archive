@@ -15,7 +15,7 @@ export function RecommendedSection({ records, ...handlers }: RecommendedSectionP
   return (
     <HomeSectionFrame
       title="Recomendado para ti"
-      subtitle="Personalizado con tu bóveda local: afinidad de géneros y títulos guardados."
+      subtitle="Personalizado con tu boveda local: afinidad de generos y titulos guardados."
       actions={
         <button
           onClick={() => void reload()}
@@ -30,7 +30,7 @@ export function RecommendedSection({ records, ...handlers }: RecommendedSectionP
         items={items}
         loading={loading}
         error={error}
-        emptyMessage="Guarda algunos títulos en tu bóveda para habilitar recomendaciones personalizadas."
+        emptyMessage="Guarda algunos titulos en tu boveda para habilitar recomendaciones personalizadas."
         onInfo={handlers.onInfo}
         onSave={handlers.onSave}
         isSaved={handlers.isSaved}

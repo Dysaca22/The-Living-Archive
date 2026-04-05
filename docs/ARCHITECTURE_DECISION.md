@@ -28,7 +28,7 @@ We will proceed with a **Local-First, BYOK (Bring Your Own Key)** architecture.
 - Data is lost if the user clears their browser cache.
 - Google Sheets integration is postponed for a post-MVP "Cloud Sync" feature.
 
-## Obsolete Patterns to Remove
-- Any reference to `VITE_GOOGLE_SHEETS_WEB_APP_URL`.
-- The `google-apps-script/` folder.
-- Redundant `InferenceEngine` service.
+## Obsolete Patterns (Removed)
+- References to `VITE_GOOGLE_SHEETS_WEB_APP_URL` were removed from runtime config.
+- `google-apps-script/` is no longer part of the MVP path.
+- The redundant inference layer was replaced by the current prompt/service flow.

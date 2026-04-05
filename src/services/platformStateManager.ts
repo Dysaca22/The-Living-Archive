@@ -1,20 +1,20 @@
 import { LocalCacheService } from './localCacheService';
-import { MediaType, VaultMovieRecord } from '../types/movie';
+import { VaultMovieRecord } from '../types/movie';
 
 /**
- * PlatformStateManager coordinates local-only persistence for the MVP.
+ * Orquesta persistencia local para el MVP.
  */
 export class PlatformStateManager {
   /**
-   * Returns normalized title inventory for prompt-level filtering.
+   * Retorna inventario normalizado de titulos para filtrado en prompts.
    */
   public static async evaluateCurrentState(): Promise<string[]> {
     try {
       const movies = LocalCacheService.getMovies();
       return movies.map((movie) => movie.title.toLowerCase().trim());
     } catch (error) {
-      console.error('Error evaluating current state:', error);
-      throw new Error('Error al acceder a la memoria local del dispositivo.');
+      console.error('Error evaluando estado local:', error);
+      throw new Error('No fue posible leer la boveda local.');
     }
   }
 
@@ -22,23 +22,19 @@ export class PlatformStateManager {
     return LocalCacheService.getMovies();
   }
 
-  public static deleteFromLocalCache(title: string, releaseYear: number, mediaType: MediaType = 'movie'): void {
-    LocalCacheService.deleteMovie(title, releaseYear, mediaType);
-  }
-
   /**
-   * Saves recommendations to local cache only.
+   * Guarda recomendaciones en cache local.
    */
   public static async syncToLocalCache(movie: VaultMovieRecord): Promise<void> {
     try {
       LocalCacheService.saveMovie(movie);
     } catch (error) {
-      console.error('Error syncing to local cache:', error);
+      console.error('Error sincronizando cache local:', error);
       const message = error instanceof Error ? error.message : '';
-      if (message.includes('vault is full')) {
+      if (message.includes('boveda local esta llena') || message.includes('vault is full')) {
         throw error;
       }
-      throw new Error('Error al guardar: La bóveda de memoria no está disponible.');
+      throw new Error('Error al guardar: la boveda local no esta disponible.');
     }
   }
 }

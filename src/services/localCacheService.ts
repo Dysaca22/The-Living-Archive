@@ -68,13 +68,13 @@ export class LocalCacheService {
     try {
       const normalized = this.normalizeRecord(movie).record;
       if (!normalized) {
-        throw new Error('Invalid movie payload.');
+        throw new Error('Formato invalido del titulo a guardar.');
       }
 
       const movies = this.getMovies();
       const isDuplicate = movies.some((existing) => isSameArchiveItem(existing, normalized));
       if (isDuplicate) {
-        throw new Error(`The resonance for "${movie.title}" is already persisted in the vault.`);
+        throw new Error(`"${movie.title}" ya existe en la boveda.`);
       }
 
       movies.push(normalized);
@@ -153,7 +153,7 @@ export class LocalCacheService {
     try {
       const data = JSON.parse(jsonString);
       if (!data.movies || !Array.isArray(data.movies)) {
-        throw new Error('Invalid archive format.');
+        throw new Error('Formato de archivo invalido.');
       }
 
       const mergedMovies = [...this.getMovies()];
@@ -164,7 +164,7 @@ export class LocalCacheService {
       for (const candidate of data.movies as RawVaultMovieRecord[]) {
         const normalized = this.normalizeRecord(candidate).record;
         if (!normalized) {
-          throw new Error('Invalid movie format in archive. Missing required fields.');
+          throw new Error('Formato invalido en el archivo importado. Faltan campos obligatorios.');
         }
 
         const isDuplicate = mergedMovies.some((existing) => isSameArchiveItem(existing, normalized));
@@ -181,7 +181,7 @@ export class LocalCacheService {
       return { imported, skipped };
     } catch (error) {
       console.error('Failed to import archive:', error);
-      throw new Error('The imported file is corrupted or incompatible with the astral records.');
+      throw new Error('El archivo importado esta danado o es incompatible con la boveda.');
     }
   }
 
@@ -223,7 +223,9 @@ export class LocalCacheService {
       title,
       releaseYear,
       narrativeJustification:
-        typeof raw.narrativeJustification === 'string' ? raw.narrativeJustification : 'No curator context available.',
+        typeof raw.narrativeJustification === 'string'
+          ? raw.narrativeJustification
+          : 'Sin contexto curatorial disponible.',
       mediaType,
       tmdbId: typeof raw.tmdbId === 'number' ? raw.tmdbId : undefined,
       posterUrl: typeof raw.posterUrl === 'string' ? raw.posterUrl : undefined,
@@ -255,11 +257,11 @@ export class LocalCacheService {
   private static handleStorageError(error: unknown): never {
     console.error('Storage Error:', error);
     if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-      throw new Error('The vault is full. Please clear some resonances to make room for new echoes.');
+      throw new Error('La boveda local esta llena. Libera espacio para guardar mas titulos.');
     }
     if (error instanceof Error) {
       throw error;
     }
-    throw new Error('An unknown error occurred while accessing the local device memory.');
+    throw new Error('Ocurrio un error inesperado al acceder a la memoria local.');
   }
 }

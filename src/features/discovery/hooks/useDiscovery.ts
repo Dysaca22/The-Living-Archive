@@ -5,10 +5,10 @@ import { ExternalApiService } from '../../../services/externalApiService';
 import { AI_CONFIG } from '../../../constants/aiConfig';
 
 const ASTRAL_MESSAGES = [
-  'Consultando el archivo cinematográfico...',
-  'Alineando resonancias visuales con tu búsqueda...',
-  'El curador está seleccionando títulos...',
-  'Analizando metadatos y contexto histórico...',
+  'Consultando el archivo cinematografico...',
+  'Alineando resonancias visuales con tu busqueda...',
+  'El curador esta seleccionando titulos...',
+  'Analizando metadatos y contexto historico...',
   'Sincronizando recomendaciones para ti...',
 ];
 
@@ -61,7 +61,7 @@ export function useDiscovery(apiKey: string | null, isReady: boolean, options: U
       if (!query.trim()) {
         setRecommendations([]);
         setHasSearched(false);
-        setError('Ingresa un término para iniciar el descubrimiento.');
+        setError('Ingresa un termino para iniciar el descubrimiento.');
         return;
       }
 
@@ -77,17 +77,17 @@ export function useDiscovery(apiKey: string | null, isReady: boolean, options: U
         );
         const limitedResults = enrichedResults.slice(0, count);
         if (limitedResults.length === 0) {
-          setError('Tu bóveda ya contiene esos títulos. Prueba con otra búsqueda.');
+          setError('Tu boveda ya contiene esos titulos. Prueba con otra busqueda.');
         } else {
           setRecommendations(limitedResults);
         }
         setHasSearched(true);
       } catch (searchError) {
-        const message = searchError instanceof Error ? searchError.message : 'Error desconocido en discovery.';
+        const message = searchError instanceof Error ? searchError.message : 'Error desconocido en descubrimiento.';
         if (message.includes('Astral Key') || message.includes('astral model') || message.includes('congested')) {
           setError(`Error de descubrimiento: ${message}`);
         } else {
-          setError('Se interrumpió la conexión de descubrimiento. Verifica tu API key.');
+          setError('Se interrumpio la conexion de descubrimiento. Verifica tu clave API.');
         }
       } finally {
         setIsLoading(false);

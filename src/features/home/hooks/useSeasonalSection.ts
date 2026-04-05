@@ -3,8 +3,8 @@ import { Movie } from '../../../types/movie';
 import { fetchSeasonalSectionMedia } from '../services/homeTmdbService';
 
 export function useSeasonalSection() {
-  const [title, setTitle] = useState('Filmes de esta época del año');
-  const [subtitle, setSubtitle] = useState('Selección curada según el mes actual.');
+  const [title, setTitle] = useState('Filmes de esta epoca del ano');
+  const [subtitle, setSubtitle] = useState('Seleccion curada segun el mes actual.');
   const [items, setItems] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

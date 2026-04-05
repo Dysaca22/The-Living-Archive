@@ -105,27 +105,31 @@ export class GeminiService {
 
       const cleanText = text.replace(/```json\n?|\n?```/g, "").trim();
       return JSON.parse(cleanText);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Gemini flow error:", error);
 
-      if (error.status === 404 || error.message?.includes("404")) {
+      const candidate = error as { status?: number; message?: string; name?: string };
+      const status = candidate.status;
+      const messageText = candidate.message ?? '';
+
+      if (status === 404 || messageText.includes("404")) {
         throw new Error(`El modelo "${AI_CONFIG.MODEL_NAME}" no esta disponible.`);
       }
       if (
-        error.status === 401 ||
-        error.status === 403 ||
-        error.message?.includes("401") ||
-        error.message?.includes("403")
+        status === 401 ||
+        status === 403 ||
+        messageText.includes("401") ||
+        messageText.includes("403")
       ) {
         throw new Error("La API key de Gemini no es valida o no tiene permisos.");
       }
-      if (error.status === 429 || error.message?.includes("429")) {
+      if (status === 429 || messageText.includes("429")) {
         throw new Error("Gemini esta saturado temporalmente. Intenta de nuevo.");
       }
       if (error instanceof SyntaxError) {
         throw new Error("Gemini devolvio JSON invalido para este flujo.");
       }
-      if (error.name === "AbortError" || error.message?.includes("fetch")) {
+      if (candidate.name === "AbortError" || messageText.includes("fetch")) {
         throw new Error("No se pudo conectar con Gemini.");
       }
 

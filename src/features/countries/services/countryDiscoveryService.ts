@@ -93,10 +93,10 @@ async function readApiError(response: Response): Promise<string> {
       return payload.error;
     }
   } catch (error) {
-    console.error('Could not parse API error payload:', error);
+    console.error('No se pudo parsear error del API:', error);
   }
 
-  return `TMDB request failed (${response.status}).`;
+  return `TMDB respondio con estado ${response.status}.`;
 }
 
 async function fetchTmdbList(endpoint: string, fallbackMediaType: TmdbMediaType, context: string): Promise<Movie[]> {

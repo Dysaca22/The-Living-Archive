@@ -25,7 +25,7 @@ export function HomeSectionGrid({
 }: HomeSectionGridProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4" role="status" aria-label="Cargando titulos">
         {Array.from({ length: 6 }).map((_, index) => (
           <div
             key={index}
@@ -38,7 +38,10 @@ export function HomeSectionGrid({
 
   if (error) {
     return (
-      <div className="h-52 rounded-2xl border border-red-500/20 bg-red-500/5 flex items-center justify-center p-6 text-center">
+      <div
+        className="h-52 rounded-2xl border border-red-500/20 bg-red-500/5 flex items-center justify-center p-6 text-center"
+        role="alert"
+      >
         <p className="text-red-300 text-sm">{error}</p>
       </div>
     );
@@ -46,7 +49,10 @@ export function HomeSectionGrid({
 
   if (items.length === 0) {
     return (
-      <div className="h-52 rounded-2xl border border-white/10 bg-surface-container-highest/10 flex flex-col items-center justify-center text-center gap-3 px-6">
+      <div
+        className="h-52 rounded-2xl border border-white/10 bg-surface-container-highest/10 flex flex-col items-center justify-center text-center gap-3 px-6"
+        role="status"
+      >
         <Sparkles className="w-8 h-8 text-primary/40" />
         <p className="text-on-surface-variant text-sm">{emptyMessage}</p>
       </div>

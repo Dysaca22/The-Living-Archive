@@ -1,17 +1,27 @@
-# Known Limitations: The Living Archive (v1.0.0)
+# Limitaciones Conocidas MVP (v1.0)
 
-## 1. Storage Constraints
-- **LocalStorage Limit**: The application uses `localStorage` for "The Vault". Most browsers limit this to ~5MB. Storing hundreds of movies with full metadata might eventually hit this limit.
-- **No Cloud Sync**: Since this is a "Local-First" MVP, your archive is tied to your browser and device. Clearing browser data will erase your vault unless you have exported it to JSON.
+## Persistencia
+- La boveda usa `localStorage` del navegador.
+- No hay sincronizacion entre dispositivos o navegadores.
+- Si se borra el storage del navegador y no hay exportacion previa, los datos se pierden.
+- El limite practico de almacenamiento depende del navegador (usualmente ~5MB).
 
-## 2. API & Intelligence
-- **Gemini Context Window**: While Gemini has a massive context window, the current "Discovery" prompt sends a curated list of your archive to avoid duplicates. If your archive grows to thousands of movies, we may need to implement a more advanced filtering strategy (e.g., Vector Search/Embeddings).
-- **TMDB Metadata**: Poster availability and localized titles depend on TMDB's database. Some obscure or very recent films might lack high-quality artwork.
-- **Wikipedia History**: The "Historical Resonance" feature depends on Wikipedia's "On This Day" API. If the API is down, the app falls back to a generic "Cinematic Era" discovery mode.
+## Fuentes externas
+- La calidad de posters, ratings, reviews y metadatos depende de TMDB.
+- Algunas obras tienen metadatos incompletos (sin poster, sin reviews, sin collection, sin temporadas completas).
+- La seccion "En este dia de la historia" depende de Wikipedia On This Day; si falla, puede degradar a estado vacio o mensaje de error.
 
-## 3. Visuals & Performance
-- **Color Extraction**: Extracting vibrant colors from posters is a CPU-intensive task. We use downsampled images to mitigate this, but low-end devices might experience slight stutters when loading many new recommendations at once.
-- **Noir Mode**: The grayscale filter is a CSS-level effect (`backdrop-filter` or `filter`). It may impact scroll performance on older mobile devices.
+## Descubrimiento asistido
+- El flujo por frases/escenas depende de Gemini y puede devolver ambiguedad o baja confianza.
+- Cuando Gemini no entrega `tmdbId`, se usa fallback por busqueda textual en TMDB; puede fallar en titulos ambiguos.
+- La categoria `indigena` se resuelve con estrategia editorial (no taxonomia oficial unica).
+- La categoria `policiaco` es una interpretacion explicita basada en combinacion de generos.
 
-## 4. Security
-- **BYOK**: The `GEMINI_API_KEY` is stored in the browser's session/local state if provided via UI. While convenient, users should be aware that anyone with access to their device could potentially retrieve the key.
+## UX y performance
+- El theming dinamico depende de imagen disponible; sin imagen se aplica fallback.
+- En cargas de red lentas algunas secciones pueden tardar en hidratar resultados por separado.
+- El build puede reportar warning de chunk grande; no bloquea release, pero conviene optimizar split de bundles en post-MVP.
+
+## Seguridad y llaves
+- En modo BYOK, la clave de Gemini queda en storage local del navegador del usuario.
+- Cualquier persona con acceso al mismo perfil del navegador podria leer esa clave.

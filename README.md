@@ -1,34 +1,51 @@
 # The Living Archive
 
-A sentient repository of cinematic history powered by Gemini AI and a Local-First BYOK architecture.
+Producto MVP para descubrimiento de cine y series con enfoque local-first.
 
-## Features
-- **Cinematic Discovery**: Personalized movie recommendations using Gemini 2.5 Flash.
-- **Historical Resonance**: Daily context from Wikipedia "On This Day" to inspire discovery.
-- **The Vault**: Local-first archive to persist your cinematic resonances using `localStorage`.
-- **Noir Mode**: A high-contrast, grayscale visual filter for an immersive experience.
-- **BYOK (Bring Your Own Key)**: Full control over your Gemini and TMDB API keys.
-- **Export/Import**: Portability for your cinematic archive via JSON files.
+## Alcance MVP
+- Persistencia oficial en `localStorage` (boveda local).
+- BYOK para Gemini (clave del usuario).
+- TMDB consumido por proxy interno en `server.ts`.
+- Sin persistencia remota activa en el MVP.
 
-## Setup
-1. **Gemini API Key**: Obtain a key from [Google AI Studio](https://aistudio.google.com/).
-2. **TMDB Access**: Obtain an **API Read Access Token** from [The Movie Database](https://www.themoviedb.org/documentation/api).
-3. **Environment Variables**:
-   - Create a `.env` file (or use the AI Studio secrets).
-   - Set `TMDB_READ_ACCESS_TOKEN` with your TMDB token.
-   - (Optional) `GEMINI_API_KEY` can be set in the environment or provided via the UI.
+## Rutas principales
+- `/`: Home con Tendencia, Filmes de esta epoca del ano, En este dia de la historia y Recomendado para ti.
+- `/buscar`: modulo dedicado para busqueda por frases/escenas y descubrimiento general.
+- `/paises`: mapa del mundo clicable con descubrimiento por pais.
+- `/categoria/:slug`: rutas inmersivas tematicas (`terror`, `romance`, `drama`, `policiaco`, `documental`, `indigena`, `animadas`).
+- `/vault`: boveda personal (estado, rating personal, notas, import/export).
 
-## Architecture
-- **Frontend**: React 19, Vite, Tailwind CSS 4, Framer Motion.
-- **Intelligence**: Google Gemini 2.5 Flash (Structured Outputs).
-- **Persistence**: Browser `localStorage` (Autonomous & Decentralized).
-- **APIs**: Wikipedia (History), TMDB (Posters).
+## Stack tecnico
+- React 19 + TypeScript + Vite.
+- `react-router-dom` para routing.
+- Tailwind CSS 4 para estilos.
+- `@google/genai` para recomendaciones asistidas.
+- TMDB + Wikipedia como fuentes externas.
 
-## Development
+## Variables de entorno
+Crear `.env` (o usar secrets del entorno) con:
+
+```env
+TMDB_READ_ACCESS_TOKEN="TU_TOKEN_TMDB"
+GEMINI_API_KEY="TU_API_KEY_GEMINI" # opcional, tambien se puede cargar desde UI
+```
+
+## Desarrollo
 ```bash
 npm install
 npm run dev
 ```
 
-## License
-MIT
+Servidor local: `http://localhost:3000`
+
+## Calidad
+```bash
+npm run lint
+npm run build
+```
+
+## Documentacion complementaria
+- [Decisiones de arquitectura](./docs/ARCHITECTURE_DECISION.md)
+- [Limitaciones conocidas MVP](./docs/KNOWN_LIMITATIONS.md)
+- [Checklist de release](./docs/RELEASE_CHECKLIST.md)
+- [Plan remoto (post-MVP)](./docs/REMOTE_PERSISTENCE_PLAN.md)

@@ -9,7 +9,7 @@ export function SeasonalSection(handlers: HomeSectionCardHandlers) {
 
   return (
     <HomeSectionFrame
-      title="Filmes de esta época del año"
+      title="Filmes de esta epoca del ano"
       subtitle={`${title}. ${subtitle}`}
       actions={
         <button

@@ -79,7 +79,7 @@ export function CountryResultsPanel({
       </div>
 
       {loading && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-4" role="status" aria-label="Cargando recomendaciones por pais">
           {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={index}
@@ -90,7 +90,7 @@ export function CountryResultsPanel({
       )}
 
       {!loading && error && (
-        <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 space-y-3">
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 space-y-3" role="alert">
           <p className="text-sm text-red-300">{error}</p>
           <button
             onClick={onRetry}
@@ -103,7 +103,7 @@ export function CountryResultsPanel({
       )}
 
       {!loading && !error && items.length === 0 && hasLoadedCountry && (
-        <div className="h-56 rounded-2xl border border-white/10 bg-surface-container-highest/10 flex flex-col items-center justify-center text-center px-5 gap-3">
+        <div className="h-56 rounded-2xl border border-white/10 bg-surface-container-highest/10 flex flex-col items-center justify-center text-center px-5 gap-3" role="status">
           <Sparkles className="w-8 h-8 text-primary/40" />
           <p className="text-sm text-on-surface-variant">
             No encontramos resultados fuertes para {selectedCountry.label}. Prueba otro pais.

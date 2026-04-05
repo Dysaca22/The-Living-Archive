@@ -109,6 +109,7 @@ export function VaultPage() {
               placeholder="Filtrar en la boveda..."
               value={archiveSearch}
               onChange={(event) => setArchiveSearch(event.target.value)}
+              aria-label="Filtrar titulos de la boveda"
               className="bg-transparent border-none outline-none text-xs w-full"
             />
           </div>
@@ -117,13 +118,13 @@ export function VaultPage() {
             <button
               onClick={handleExportVault}
               className="text-on-surface-variant hover:text-primary transition-colors font-mono text-xs uppercase tracking-widest focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded px-2 py-1"
-              aria-label="Export vault to JSON"
+              aria-label="Exportar boveda en JSON"
             >
               Exportar
             </button>
             <label
               className="text-on-surface-variant hover:text-primary transition-colors font-mono text-xs uppercase tracking-widest cursor-pointer focus-within:ring-2 focus-within:ring-primary focus-within:outline-none rounded px-2 py-1"
-              aria-label="Import vault from JSON"
+              aria-label="Importar boveda desde JSON"
             >
               Importar
               <input type="file" accept=".json" onChange={handleImportVault} className="hidden" />
@@ -131,7 +132,7 @@ export function VaultPage() {
             <button
               onClick={() => setShowClearConfirm(true)}
               className="text-on-surface-variant hover:text-red-400 transition-colors font-mono text-xs uppercase tracking-widest whitespace-nowrap focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none rounded px-2 py-1"
-              aria-label="Clear entire vault"
+              aria-label="Limpiar toda la boveda"
             >
               Limpiar boveda
             </button>

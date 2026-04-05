@@ -243,15 +243,16 @@ export function SearchPage() {
           <div>
             <h2 className="text-2xl font-serif mb-2">Conexion requerida</h2>
             <p className="text-on-surface-variant text-sm leading-relaxed">
-              Para usar busqueda con IA, configura tu API key de Gemini.
+              Para usar busqueda con IA, configura tu clave API de Gemini.
             </p>
           </div>
           <form onSubmit={handleSaveKey} className="w-full flex flex-col gap-4">
             <input
               type="password"
-              placeholder="Ingresa tu API key de Gemini..."
+              placeholder="Ingresa tu clave API de Gemini..."
               value={inputKey}
               onChange={(event) => setInputKey(event.target.value)}
+              aria-label="Clave API de Gemini"
               className="w-full bg-surface-container-highest/50 border-b border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors font-mono"
             />
             <button
@@ -280,7 +281,7 @@ export function SearchPage() {
 
     if (quoteSceneSearch.results.length === 0) {
       return (
-        <div className="col-span-full flex flex-col items-center justify-center h-80 glass rounded-3xl border-dashed border-white/5">
+        <div className="col-span-full flex flex-col items-center justify-center h-80 glass rounded-3xl border-dashed border-white/5" role="status">
           <Sparkles className="w-12 h-12 text-primary/10 mb-6" />
           <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-on-surface-variant/40 text-center px-4">
             {quoteSceneSearch.hasSearched
@@ -359,7 +360,7 @@ export function SearchPage() {
 
     if (generalSearch.recommendations.length === 0) {
       return (
-        <div className="col-span-full flex flex-col items-center justify-center h-80 glass rounded-3xl border-dashed border-white/5">
+        <div className="col-span-full flex flex-col items-center justify-center h-80 glass rounded-3xl border-dashed border-white/5" role="status">
           <Sparkles className="w-12 h-12 text-primary/10 mb-6" />
           <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-on-surface-variant/40 text-center px-4">
             {generalSearch.hasSearched
@@ -445,6 +446,7 @@ export function SearchPage() {
                   setGeneralCount(nextValue);
                 }
               }}
+              aria-label="Cantidad de resultados"
               className="bg-transparent text-xs outline-none border-none"
             >
               <option value={4}>4</option>
@@ -500,6 +502,7 @@ export function SearchPage() {
                 generalSearch.setSearchQuery(event.target.value);
               }
             }}
+            aria-label={mode === 'quote_scene' ? 'Busqueda por frases o escenas' : 'Busqueda de descubrimiento general'}
             placeholder={
               mode === 'quote_scene'
                 ? "Ej: 'escena de brindis en barco con final tragico'"
@@ -522,6 +525,7 @@ export function SearchPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               className="absolute top-full left-0 right-0 mt-4 p-4 glass border-primary/20 rounded-2xl flex items-center gap-3 text-xs text-primary bg-primary/5"
+              role="alert"
             >
               <AlertCircle className="w-4 h-4 shrink-0" />
               {activeError}
@@ -530,7 +534,12 @@ export function SearchPage() {
         </AnimatePresence>
 
         {(quoteSceneSearch.isLoading || generalSearch.isLoading) && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute top-full left-0 right-0 mt-4 text-center">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute top-full left-0 right-0 mt-4 text-center"
+            role="status"
+          >
             <p className="font-mono text-[10px] text-on-surface-variant uppercase tracking-[0.4em] animate-pulse">
               {activeLoadingMessage}
             </p>

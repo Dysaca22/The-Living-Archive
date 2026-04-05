@@ -44,7 +44,7 @@ export class ExternalApiService {
       const response = await fetch(`https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`);
       
       if (!response.ok) {
-        throw new Error(`Wikipedia API error: ${response.status}`);
+        throw new Error(`Wikipedia API respondio con estado ${response.status}.`);
       }
 
       const result = await response.json();
@@ -52,7 +52,7 @@ export class ExternalApiService {
       historicalDayCache = { key: dayKey, events };
 
       if (events.length === 0) {
-        return "A quiet day in the annals of history, where the astral flow remained undisturbed.";
+        return 'No se encontraron efemerides para hoy en la fuente publica.';
       }
 
       // Pseudo-random selection of a high-impact event
@@ -61,8 +61,8 @@ export class ExternalApiService {
 
       return `${event.year}: ${event.text}`;
     } catch (error) {
-      console.error('Failed to fetch historical context:', error);
-      return "History is currently obscured by the astral mists. Seek your own path.";
+      console.error('No se pudo cargar la efemeride diaria:', error);
+      return 'No fue posible cargar la efemeride del dia.';
     }
   }
 
@@ -76,9 +76,9 @@ export class ExternalApiService {
 
       if (!response.ok) {
         if (response.status === 503) {
-          console.warn('TMDB access not configured on server. Returning fallback artwork.');
+          console.warn('TMDB no esta configurado en el servidor. Se usa portada de respaldo.');
         } else {
-          throw new Error(`TMDB proxy error: ${response.status}`);
+          throw new Error(`TMDB proxy devolvio estado ${response.status}.`);
         }
         return FALLBACK_POSTER_URL;
       }
@@ -91,7 +91,7 @@ export class ExternalApiService {
 
       return FALLBACK_POSTER_URL;
     } catch (error) {
-      console.error(`Failed to resolve artwork for TMDB ID ${tmdbDatabaseId}:`, error);
+      console.error(`No se pudo resolver portada TMDB para ${tmdbDatabaseId}:`, error);
       return FALLBACK_POSTER_URL;
     }
   }
@@ -129,7 +129,7 @@ export class ExternalApiService {
       
       return undefined;
     } catch (error) {
-      console.error(`Failed to search TMDB ID for ${title}:`, error);
+      console.error(`No se pudo resolver TMDB id para "${title}":`, error);
       return undefined;
     }
   }

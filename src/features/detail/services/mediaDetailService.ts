@@ -107,9 +107,9 @@ async function readApiError(response: Response): Promise<string> {
       return payload.error;
     }
   } catch (error) {
-    console.error('Failed to parse TMDB proxy error payload:', error);
+    console.error('No se pudo parsear error del proxy TMDB:', error);
   }
-  return `TMDB proxy request failed (${response.status}).`;
+  return `TMDB proxy respondio con estado ${response.status}.`;
 }
 
 async function fetchJson<T>(url: string): Promise<T> {
@@ -124,7 +124,7 @@ async function fetchDetailWithMediaTypeFallback(
   movie: Movie
 ): Promise<{ payload: TmdbMediaDetailResponse; resolvedMediaType: 'movie' | 'tv' }> {
   if (!movie.tmdbId) {
-    throw new Error('TMDB id is required to resolve media detail.');
+    throw new Error('Se requiere tmdbId para resolver el detalle.');
   }
 
   const primaryMediaType = movie.mediaType;
@@ -262,7 +262,7 @@ export async function fetchMediaDetail(movie: Movie): Promise<MediaDetail | null
           };
         }
       } catch (error) {
-        console.error('Collection lookup failed:', error);
+        console.error('No se pudo cargar la coleccion relacionada:', error);
       }
     }
 

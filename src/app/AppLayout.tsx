@@ -6,8 +6,8 @@ import { useGeminiCredentials } from '../hooks/useGeminiCredentials';
 const NAV_ITEMS = [
   { to: '/', label: 'Inicio', end: true },
   { to: '/buscar', label: 'Buscar' },
-  { to: '/paises', label: 'Países' },
-  { to: '/vault', label: 'Bóveda' },
+  { to: '/paises', label: 'Paises' },
+  { to: '/vault', label: 'Boveda' },
 ];
 
 export function AppLayout() {
@@ -33,7 +33,9 @@ export function AppLayout() {
       <nav className="fixed top-0 left-0 right-0 h-16 glass z-50 flex items-center justify-between px-4 md:px-8">
         <NavLink to="/" className="flex items-center gap-2">
           <Archive className="text-primary w-5 h-5 md:w-6 md:h-6" />
-          <span className="font-serif text-lg md:text-xl font-medium tracking-tight hidden sm:block">The Living Archive</span>
+          <span className="font-serif text-lg md:text-xl font-medium tracking-tight hidden sm:block">
+            The Living Archive
+          </span>
         </NavLink>
 
         <div className="flex items-center gap-4 md:gap-8 text-on-surface-variant font-mono text-xs md:text-sm uppercase tracking-widest">
@@ -58,8 +60,8 @@ export function AppLayout() {
                 ? 'bg-primary/20 text-primary shadow-[0_0_15px_rgba(255,77,0,0.3)]'
                 : 'text-on-surface-variant hover:text-primary hover:bg-white/5'
             }`}
-            aria-label={isNoirMode ? 'Disable Noir Mode' : 'Enable Noir Mode'}
-            title={isNoirMode ? 'Disable Noir Mode' : 'Enable Noir Mode'}
+            aria-label={isNoirMode ? 'Desactivar modo noir' : 'Activar modo noir'}
+            title={isNoirMode ? 'Desactivar modo noir' : 'Activar modo noir'}
           >
             <Moon className="w-4 h-4 md:w-5 md:h-5" />
           </button>
@@ -68,8 +70,8 @@ export function AppLayout() {
         <button
           onClick={clearKey}
           className="hover:text-primary transition-colors text-on-surface-variant focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded p-1"
-          aria-label="Logout and clear API key"
-          title="Logout and clear API key"
+          aria-label="Cerrar sesion y limpiar clave API"
+          title="Cerrar sesion y limpiar clave API"
         >
           <LogOut className="w-4 h-4 md:w-5 md:h-5" />
         </button>
@@ -82,7 +84,7 @@ export function AppLayout() {
       </main>
 
       <footer className="px-4 md:px-8 py-6 border-t border-white/5 font-mono text-xs text-on-surface-variant uppercase tracking-widest text-center md:text-left">
-        {isReady ? 'Gemini Key: Activa' : 'Gemini Key: Pendiente'}
+        {isReady ? 'Clave Gemini: activa' : 'Clave Gemini: pendiente'}
       </footer>
     </div>
   );

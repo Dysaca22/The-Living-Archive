@@ -32,6 +32,10 @@ interface TmdbListResponse {
   results?: TmdbListItem[];
 }
 
+interface ApiErrorPayload {
+  error?: string;
+}
+
 interface SeasonalProfile {
   bucket: SeasonBucket;
   title: string;
@@ -44,28 +48,28 @@ const SEASONAL_PROFILES: Record<number, SeasonalProfile> = {
   1: {
     bucket: 'verano',
     title: 'Filmes para enero',
-    subtitle: 'Historias familiares y de aventura para abrir el año.',
+    subtitle: 'Historias familiares y de aventura para abrir el ano.',
     movieGenres: '12,35,10751',
     tvGenres: '35,10759,10765',
   },
   2: {
     bucket: 'verano',
     title: 'Filmes para febrero',
-    subtitle: 'Romance y películas luminosas para mitad de temporada.',
+    subtitle: 'Romance y peliculas luminosas para mitad de temporada.',
     movieGenres: '10749,35,18',
     tvGenres: '18,35,10766',
   },
   3: {
     bucket: 'otono',
     title: 'Filmes para marzo',
-    subtitle: 'Dramas de transición y relatos de reinicio.',
+    subtitle: 'Dramas de transicion y relatos de reinicio.',
     movieGenres: '18,10402,10749',
     tvGenres: '18,9648,10766',
   },
   4: {
     bucket: 'otono',
     title: 'Filmes para abril',
-    subtitle: 'Cine de autor y emociones de media estación.',
+    subtitle: 'Cine de autor y emociones de media estacion.',
     movieGenres: '18,99,10749',
     tvGenres: '18,99,9648',
   },
@@ -79,7 +83,7 @@ const SEASONAL_PROFILES: Record<number, SeasonalProfile> = {
   6: {
     bucket: 'invierno',
     title: 'Filmes para junio',
-    subtitle: 'Acción y ciencia ficción para noches largas.',
+    subtitle: 'Accion y ciencia ficcion para noches largas.',
     movieGenres: '28,878,12',
     tvGenres: '10759,10765,9648',
   },
@@ -93,7 +97,7 @@ const SEASONAL_PROFILES: Record<number, SeasonalProfile> = {
   8: {
     bucket: 'invierno',
     title: 'Filmes para agosto',
-    subtitle: 'Thrillers y fantasía para cierre de temporada fría.',
+    subtitle: 'Thrillers y fantasia para cierre de temporada fria.',
     movieGenres: '53,14,9648',
     tvGenres: '9648,80,10759',
   },
@@ -114,14 +118,14 @@ const SEASONAL_PROFILES: Record<number, SeasonalProfile> = {
   11: {
     bucket: 'primavera',
     title: 'Filmes para noviembre',
-    subtitle: 'Cierre emocional con cine dramático y documental.',
+    subtitle: 'Cierre emocional con cine dramatico y documental.',
     movieGenres: '18,99,10752',
     tvGenres: '18,99,80',
   },
   12: {
     bucket: 'verano',
     title: 'Filmes para diciembre',
-    subtitle: 'Selección festiva, familiar y de aventura.',
+    subtitle: 'Seleccion festiva, familiar y de aventura.',
     movieGenres: '10751,35,12',
     tvGenres: '10766,35,10759',
   },
@@ -164,11 +168,35 @@ function toMovie(item: TmdbListItem, fallbackMediaType: TmdbMediaType, context: 
   };
 }
 
-async function fetchTmdbList(cacheKey: string, endpoint: string, fallbackMediaType: TmdbMediaType, context: string): Promise<Movie[]> {
+async function readApiError(response: Response): Promise<string> {
+  try {
+    const payload = (await response.json()) as ApiErrorPayload;
+    if (typeof payload.error === 'string' && payload.error.trim()) {
+      return payload.error;
+    }
+  } catch {
+    // ignore JSON parse failures for error payloads
+  }
+
+  return `TMDB respondio con estado ${response.status}.`;
+}
+
+async function fetchTmdbList(
+  cacheKey: string,
+  endpoint: string,
+  fallbackMediaType: TmdbMediaType,
+  context: string
+): Promise<Movie[]> {
   return withSimpleCache(cacheKey, CACHE_TTL_MS, async () => {
     const response = await fetch(endpoint);
     if (!response.ok) {
-      throw new Error(`TMDB request failed (${response.status}).`);
+      const errorMessage = await readApiError(response);
+      if (response.status === 503) {
+        throw new Error(
+          `${errorMessage} Configura TMDB_READ_ACCESS_TOKEN en tu archivo .env y reinicia npm run dev.`
+        );
+      }
+      throw new Error(errorMessage);
     }
 
     const payload = (await response.json()) as TmdbListResponse;
@@ -198,7 +226,7 @@ export async function fetchSeasonalSectionMedia(date: Date): Promise<{ title: st
       `home:seasonal:movie:${month}`,
       `/api/tmdb/discover/movie?with_genres=${profile.movieGenres}&sort_by=popularity.desc&vote_count.gte=200`,
       'movie',
-      `Selección estacional (${profile.bucket}) para el mes actual.`
+      `Seleccion estacional (${profile.bucket}) para el mes actual.`
     ),
     fetchTmdbList(
       `home:seasonal:tv:${month}`,

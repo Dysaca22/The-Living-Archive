@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { KeyboardEvent, useMemo, useState } from 'react';
 import { COUNTRY_CATALOG, FEATURED_COUNTRIES, getCountryByMapId } from '../config/countryConfig';
 import { WORLD_MAP } from '../config/worldMapData';
 
@@ -22,13 +22,20 @@ export function WorldCountryMap({ selectedCountryMapId, onSelectCountry }: World
   const hoveredLabel = hoveredCountry?.label;
   const selectedLabel = selectedCountry?.label;
 
+  const handleCountryKeyDown = (event: KeyboardEvent<SVGPathElement>, countryMapId: string) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onSelectCountry(countryMapId);
+    }
+  };
+
   return (
     <section className="glass rounded-3xl p-6 border border-white/5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-3xl font-serif italic">Mapa del mundo</h2>
           <p className="text-xs text-on-surface-variant font-mono uppercase tracking-widest mt-2">
-            Haz click en un pais para activar el discovery
+            Haz clic o presiona Enter en un pais para activar el descubrimiento
           </p>
         </div>
         <div className="text-right">
@@ -42,7 +49,7 @@ export function WorldCountryMap({ selectedCountryMapId, onSelectCountry }: World
           viewBox={WORLD_MAP.viewBox}
           className="w-full min-w-[760px] h-auto"
           role="img"
-          aria-label={WORLD_MAP.label}
+          aria-label="Mapa mundial interactivo"
         >
           {WORLD_MAP.locations.map((location) => {
             const isSelected = selectedCountryMapId === location.id;
@@ -53,9 +60,14 @@ export function WorldCountryMap({ selectedCountryMapId, onSelectCountry }: World
                 key={location.id}
                 d={location.path}
                 onClick={() => onSelectCountry(location.id)}
+                onKeyDown={(event) => handleCountryKeyDown(event, location.id)}
                 onMouseEnter={() => setHoveredCountryMapId(location.id)}
                 onMouseLeave={() => setHoveredCountryMapId(null)}
                 className="cursor-pointer transition-colors duration-150"
+                role="button"
+                tabIndex={0}
+                aria-pressed={isSelected}
+                aria-label={`Seleccionar ${getCountryByMapId(location.id)?.label ?? location.name}`}
                 style={{
                   fill: isSelected
                     ? 'rgba(255, 77, 0, 0.9)'

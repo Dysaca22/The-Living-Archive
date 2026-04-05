@@ -9,11 +9,11 @@ export function HistorySection(handlers: HomeSectionCardHandlers) {
 
   return (
     <HomeSectionFrame
-      title="En este día de la historia"
+      title="En este dia de la historia"
       subtitle={
         eventText
           ? `${dayLabel}: ${eventText}`
-          : `Cargando efeméride del ${dayLabel} para descubrir títulos relacionados.`
+          : `Cargando efemeride del ${dayLabel} para descubrir titulos relacionados.`
       }
       actions={
         <button
@@ -21,7 +21,7 @@ export function HistorySection(handlers: HomeSectionCardHandlers) {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:border-primary/40 transition-colors font-mono text-[10px] uppercase tracking-widest"
         >
           <RefreshCw className="w-3 h-3" />
-          Regenerar efeméride
+          Regenerar efemeride
         </button>
       }
     >
@@ -29,7 +29,7 @@ export function HistorySection(handlers: HomeSectionCardHandlers) {
         items={items}
         loading={loading}
         error={error}
-        emptyMessage="No hay resultados relacionados con la efeméride actual."
+        emptyMessage="No hay resultados relacionados con la efemeride actual."
         onInfo={handlers.onInfo}
         onSave={handlers.onSave}
         isSaved={handlers.isSaved}

@@ -10,7 +10,7 @@ export function TrendingSection(handlers: HomeSectionCardHandlers) {
   return (
     <HomeSectionFrame
       title="Tendencia"
-      subtitle="Selección en tendencia desde TMDB (fuente externa oficial) para esta semana."
+      subtitle="Seleccion en tendencia desde TMDB (fuente externa oficial) para esta semana."
       actions={
         <button
           onClick={() => void reload()}
@@ -25,7 +25,7 @@ export function TrendingSection(handlers: HomeSectionCardHandlers) {
         items={items}
         loading={loading}
         error={error}
-        emptyMessage="No hay títulos en tendencia por ahora."
+        emptyMessage="No hay titulos en tendencia por ahora."
         onInfo={handlers.onInfo}
         onSave={handlers.onSave}
         isSaved={handlers.isSaved}

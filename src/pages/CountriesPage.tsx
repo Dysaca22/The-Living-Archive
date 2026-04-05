@@ -54,7 +54,7 @@ export function CountriesPage() {
         <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-white/10 glass">
           <Globe className="w-4 h-4 text-primary" />
           <span className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant">
-            Discovery global
+            Descubrimiento global
           </span>
         </div>
         <h1 className="text-5xl md:text-6xl font-serif italic tracking-tight">Explora por pais</h1>
